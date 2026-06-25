@@ -1,0 +1,698 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ECK Src">
+      <UniqueIdentifier>{cbd3bfff-be78-463f-b3f0-d8b1f3a3851b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECK Include">
+      <UniqueIdentifier>{71789331-3ac2-45f7-8fe6-7e42e5769f44}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CButton.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CColorPicker.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CEdit.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CCommDlg.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLabel.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CListBox.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CListBoxExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CStatic.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CUpDown.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DlgTemplate.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ECK.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ImageHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Utility.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\WndHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWnd.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRefStr.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRefBin.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTreeView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Env.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CComboBox.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CListView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CBk.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DesignerDef.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLunarCalendar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\LunarDateLib.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHeader.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CPropertySheet.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHotKey.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTaskGroupList.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTab.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CArray.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CAllocator.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CForm.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CEditExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTabHeader.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CComboBoxEx.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CFile.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CScrollView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CToolBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDialog.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSplitBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\EasingCurve.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDrawPanel.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MathHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CListBoxNew.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CMenu.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\GraphicsHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CFlowLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\SystemHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRegKey.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CStreamView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWindowMask.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRefBinStream.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CMemWalker.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CListViewExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTreeList.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CtrlGraphics.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CInputBox.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDataObjectHDrop.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CToolTip.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiBase.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiLabel.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiButton.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiList.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CD2DImageList.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiTrackBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiCircleButton.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CIni.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiEdit.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CComboBoxNew.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTrackBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTreeListExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CCriticalSection.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CQueueTimer.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSrwLock.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CConditionVariable.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ITimeLine.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CInertialScrollView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CEvent.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ILayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLinearLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLayoutBase.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWindowPosSetting.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiScrollBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CProgressBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CFontPicker.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CEditNcComp.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CColorPickBlock.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLink.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSplitLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CPictureBox.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\PchInc.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTag.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CStreamWalker.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CScrollBarHook.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDateTimePicker.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="CTestWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CBitSet.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MultiFrameImage.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ComPtr.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\GeometryRender.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHexEdit.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTagID3v2.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTagFlac.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTagID3v1.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTagMpeg.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\IMem.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Utility2.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\PrivateApi.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Lyric.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ShellHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ProcThrdHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRichEdit.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\NetworkHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiTitleBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDwmWndPartMgr.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DistortImage.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CFrameLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSignal.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Json.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MediaTagApe.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHitter.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRelativeLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTableLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DateTimeHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\LunarDateTimeHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWaitableObject.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWaitableTimer.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CBorderLayout.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CProcessorUsage.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CObject.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ISO8601Time.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CImageMat.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CArray2D.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\GdipEffect.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRegion.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DDX.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DDXImpl.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHeaderExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DpiApi.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CLayoutDummy.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CIPEdit.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CMonthCalendar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSelRange.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CMemorySet.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiTheme.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiDef.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CUnknown.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiStdTheme.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CEnumFile.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\TextSrvDef.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiListTemplate.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiTabList.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CMsgBoxHook.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CIPEditExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHotKeyExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CStatusBar.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CalculateExpression.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ThreadPool.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CoroutineHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\AutoPtrDef.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CHandleTable.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTimeIdGenerator.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSequenceIdGenerator.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\StringUtility.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\MemUtility.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CIniExt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\LocaleStringUtility.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CUninstallInfo.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\NativeWrapper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\PhysicalDriveId.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Snapshot.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CColorReducing.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ShellMenuInfo.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\UIAccess.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\WinRtD2DInteropFx.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\WinRtDCompInterop.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\BackdropEffectChain.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiCompositor.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiStdCompositor.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDWriteFontFactory.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiHeader.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ObjectAttribute.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\EzDx.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CCombinationScrollView.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\IScroll.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CWndScroll.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\SymbolHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ComServerHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ProcModule.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\BaseN.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Crc.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\EnDeCode.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Compress.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Crypt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\EncodingDetect.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\LyricCrypt.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CSimplePath.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DwLayoutPath.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiElemSizeBox.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CDuiTabHeader.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiCssTheme.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\DuiCssParse.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\PathUtility.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\FileHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CNtObject.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ConsoleIo.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CPerspectiveCamera.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Random.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\StringConvert.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\ClipboardHelper.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\Alpc.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CTrivialBuffer.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+    <ClInclude Include="eck\CRectPackSkyline.h">
+      <Filter>ECK Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="eck\ECK.cpp">
+      <Filter>ECK Src</Filter>
+    </ClCompile>
+    <ClCompile Include="eck\CScrollBar.h">
+      <Filter>ECK Include</Filter>
+    </ClCompile>
+    <ClCompile Include="eck\DesignerDef.cpp">
+      <Filter>ECK Src</Filter>
+    </ClCompile>
+    <ClCompile Include="t_main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CTestWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Win32Template.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+</Project>

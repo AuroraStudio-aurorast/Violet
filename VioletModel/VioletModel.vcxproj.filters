@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="eck">
+      <UniqueIdentifier>{f5a12c05-5724-4c4c-9306-c0b37b6a6f34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pch">
+      <UniqueIdentifier>{fe295838-cf38-4b9f-a8b8-0a8715b12b26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{b2970df7-345c-4033-85b3-a4127c8a5e05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="逻辑">
+      <UniqueIdentifier>{d15eb3a4-cee4-4e2d-bc8d-0db3b6331f24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\容器">
+      <UniqueIdentifier>{cc6f939b-8114-4cfd-9a33-b1fdb557b4a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\元素">
+      <UniqueIdentifier>{0e8e2e0a-f723-4d53-9e91-73e20fcfa1a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\混合器">
+      <UniqueIdentifier>{d3bf331d-e3bc-4039-930d-8d47d08d299a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口">
+      <UniqueIdentifier>{d0e20229-bd56-4899-b4fd-4761ce841c0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="程序">
+      <UniqueIdentifier>{f6ff8827-a3b2-4fbf-aeff-54be55dc2447}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\其他">
+      <UniqueIdentifier>{a7bedadb-6b6b-4067-8919-08eb26c3e001}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayer.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CBass.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CPage.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPageEffect.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPageList.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPageMain.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPageOptions.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPagePlaying.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayPanel.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CTabPanel.h">
+      <Filter>UI\容器</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeCover.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeLrc.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeMiniCover.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CCompPlayPageAn.h">
+      <Filter>UI\混合器</Filter>
+    </ClInclude>
+    <ClInclude Include="CMediaLib.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayList.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CWndMain.h">
+      <Filter>窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayListMgr.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CWndTbGhost.h">
+      <Filter>窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="CWndLrc.h">
+      <Filter>窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDtLrc.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeVolumeBar.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayListFile.h">
+      <Filter>逻辑</Filter>
+    </ClInclude>
+    <ClInclude Include="CApp.h">
+      <Filter>程序</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>程序</Filter>
+    </ClInclude>
+    <ClInclude Include="CLrGeometryRealization.h">
+      <Filter>UI\其他</Filter>
+    </ClInclude>
+    <ClInclude Include="CLyricRendererBase.h">
+      <Filter>UI\其他</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiScrollBar.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiTrackBar.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiButton.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiEdit.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiTabList.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiList.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiListTemplate.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiHeader.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiTitleBar.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CAppLang.h">
+      <Filter>程序</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiImage.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiCircleButton.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiPlayList.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+    <ClInclude Include="CVeDuiCard.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MyEck.cpp">
+      <Filter>eck</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayer.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CBass.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CPage.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPageEffect.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPageList.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPageMain.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPageOptions.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPagePlaying.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayPanel.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CTabPanel.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeCover.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeLrc.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeMiniCover.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CMediaLib.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayList.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CWndMain.cpp">
+      <Filter>窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayListMgr.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CWndTbGhost.cpp">
+      <Filter>窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="CWndMain_Shell.cpp">
+      <Filter>窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="CWndLrc.cpp">
+      <Filter>窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDtLrc.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeVolumeBar.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayListFile.cpp">
+      <Filter>逻辑</Filter>
+    </ClCompile>
+    <ClCompile Include="CApp.cpp">
+      <Filter>程序</Filter>
+    </ClCompile>
+    <ClCompile Include="Entry.cpp">
+      <Filter>程序</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>程序</Filter>
+    </ClCompile>
+    <ClCompile Include="CLrGeometryRealization.cpp">
+      <Filter>UI\其他</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiScrollBar.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiTrackBar.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiButton.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiEdit.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiTabList.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiList.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiListTemplate.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiHeader.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiTitleBar.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CAppLang.cpp">
+      <Filter>程序</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiImage.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiCircleButton.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiPlayList.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeDuiCard.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Skin\App.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+</Project>

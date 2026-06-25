@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{e2596dd5-59f7-44bc-a10f-548f6d1e7a38}</ProjectGuid>
+    <RootNamespace>WinEzCtrlKit</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions);NOMINMAX;ECK_OPT_MYDBG;_CRTDBG_MAP_ALLOC</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>.\eck\Others\DpiAwarePreMonV2.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);NOMINMAX;ECK_OPT_MYDBG</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers />
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>.\eck\Others\DpiAwarePreMonV2.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions);NOMINMAX;ECK_OPT_MYDBG;_CRTDBG_MAP_ALLOC</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>.\eck\Others\DpiAwarePreMonV2.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);NOMINMAX;ECK_OPT_MYDBG</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>.\eck\Others\DpiAwarePreMonV2.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CTestWnd.h" />
+    <ClInclude Include="eck\AutoPtrDef.h" />
+    <ClInclude Include="eck\BackdropEffectChain.h" />
+    <ClInclude Include="eck\BaseN.h" />
+    <ClInclude Include="eck\Alpc.h" />
+    <ClInclude Include="eck\CArray2D.h" />
+    <ClInclude Include="eck\CBorderLayout.h" />
+    <ClInclude Include="eck\CColorReducing.h" />
+    <ClInclude Include="eck\CCombinationScrollView.h" />
+    <ClInclude Include="eck\CDuiHeader.h" />
+    <ClInclude Include="eck\CDuiListTemplate.h" />
+    <ClInclude Include="eck\CDuiTabHeader.h" />
+    <ClInclude Include="eck\CDuiTabList.h" />
+    <ClInclude Include="eck\CDWriteFontFactory.h" />
+    <ClInclude Include="eck\CEnumFile.h" />
+    <ClInclude Include="eck\CHandleTable.h" />
+    <ClInclude Include="eck\CHeaderExt.h" />
+    <ClInclude Include="eck\CHitter.h" />
+    <ClInclude Include="eck\CHotKeyExt.h" />
+    <ClInclude Include="eck\CIniExt.h" />
+    <ClInclude Include="eck\ClipboardHelper.h" />
+    <ClInclude Include="eck\CNtObject.h" />
+    <ClInclude Include="eck\Compress.h" />
+    <ClInclude Include="eck\ComServerHelper.h" />
+    <ClInclude Include="eck\Crc.h" />
+    <ClInclude Include="eck\CRectPackSkyline.h" />
+    <ClInclude Include="eck\CTrivialBuffer.h" />
+    <ClInclude Include="eck\Crypt.h" />
+    <ClInclude Include="eck\CPerspectiveCamera.h" />
+    <ClInclude Include="eck\CSequenceIdGenerator.h" />
+    <ClInclude Include="eck\ConsoleIo.h" />
+    <ClInclude Include="eck\CSimplePath.h" />
+    <ClInclude Include="eck\DuiCssTheme.h" />
+    <ClInclude Include="eck\DuiCssParse.h" />
+    <ClInclude Include="eck\DuiElemSizeBox.h" />
+    <ClInclude Include="eck\DwLayoutPath.h" />
+    <ClInclude Include="eck\EncodingDetect.h" />
+    <ClInclude Include="eck\EnDeCode.h" />
+    <ClInclude Include="eck\FileHelper.h" />
+    <ClInclude Include="eck\LyricCrypt.h" />
+    <ClInclude Include="eck\PathUtility.h" />
+    <ClInclude Include="eck\Random.h" />
+    <ClInclude Include="eck\ShellMenuInfo.h" />
+    <ClInclude Include="eck\CTimeIdGenerator.h" />
+    <ClInclude Include="eck\CIPEdit.h" />
+    <ClInclude Include="eck\CIPEditExt.h" />
+    <ClInclude Include="eck\CLayoutDummy.h" />
+    <ClInclude Include="eck\CMemorySet.h" />
+    <ClInclude Include="eck\CMonthCalendar.h" />
+    <ClInclude Include="eck\CMsgBoxHook.h" />
+    <ClInclude Include="eck\CObject.h" />
+    <ClInclude Include="eck\CRegion.h" />
+    <ClInclude Include="eck\CSelRange.h" />
+    <ClInclude Include="eck\CStatusBar.h" />
+    <ClInclude Include="eck\CTableLayout.h" />
+    <ClInclude Include="eck\CUninstallInfo.h" />
+    <ClInclude Include="eck\CUnknown.h" />
+    <ClInclude Include="eck\CWaitableObject.h" />
+    <ClInclude Include="eck\CWaitableTimer.h" />
+    <ClInclude Include="eck\CWndScroll.h" />
+    <ClInclude Include="eck\DateTimeHelper.h" />
+    <ClInclude Include="eck\DDX.h" />
+    <ClInclude Include="eck\DDXImpl.h" />
+    <ClInclude Include="eck\DpiApi.h" />
+    <ClInclude Include="eck\DuiCompositor.h" />
+    <ClInclude Include="eck\DuiDef.h" />
+    <ClInclude Include="eck\DuiStdCompositor.h" />
+    <ClInclude Include="eck\DuiStdTheme.h" />
+    <ClInclude Include="eck\DuiTheme.h" />
+    <ClInclude Include="eck\CalculateExpression.h" />
+    <ClInclude Include="eck\EzDx.h" />
+    <ClInclude Include="eck\GdipEffect.h" />
+    <ClInclude Include="eck\CoroutineHelper.h" />
+    <ClInclude Include="eck\IScroll.h" />
+    <ClInclude Include="eck\ISO8601Time.h" />
+    <ClInclude Include="eck\Json.h" />
+    <ClInclude Include="eck\CSignal.h" />
+    <ClInclude Include="eck\CAllocator.h" />
+    <ClInclude Include="eck\CArray.h" />
+    <ClInclude Include="eck\CBitSet.h" />
+    <ClInclude Include="eck\CBk.h" />
+    <ClInclude Include="eck\CColorPickBlock.h" />
+    <ClInclude Include="eck\CComboBox.h" />
+    <ClInclude Include="eck\CComboBoxEx.h" />
+    <ClInclude Include="eck\CComboBoxNew.h" />
+    <ClInclude Include="eck\CConditionVariable.h" />
+    <ClInclude Include="eck\CCriticalSection.h" />
+    <ClInclude Include="eck\CD2DImageList.h" />
+    <ClInclude Include="eck\CDateTimePicker.h" />
+    <ClInclude Include="eck\CDialog.h" />
+    <ClInclude Include="eck\CDrawPanel.h" />
+    <ClInclude Include="eck\CDuiCircleButton.h" />
+    <ClInclude Include="eck\CDuiButton.h" />
+    <ClInclude Include="eck\CDuiEdit.h" />
+    <ClInclude Include="eck\CDuiLabel.h" />
+    <ClInclude Include="eck\CDuiList.h" />
+    <ClInclude Include="eck\CDuiScrollBar.h" />
+    <ClInclude Include="eck\CDuiTitleBar.h" />
+    <ClInclude Include="eck\CDuiTrackBar.h" />
+    <ClInclude Include="eck\CDwmWndPartMgr.h" />
+    <ClInclude Include="eck\CEditNcComp.h" />
+    <ClInclude Include="eck\CEvent.h" />
+    <ClInclude Include="eck\CFontPicker.h" />
+    <ClInclude Include="eck\CFrameLayout.h" />
+    <ClInclude Include="eck\CHexEdit.h" />
+    <ClInclude Include="eck\ComPtr.h" />
+    <ClInclude Include="eck\CRichEdit.h" />
+    <ClInclude Include="eck\DistortImage.h" />
+    <ClInclude Include="eck\GeometryRender.h" />
+    <ClInclude Include="eck\IMem.h" />
+    <ClInclude Include="eck\ProcModule.h" />
+    <ClInclude Include="eck\LocaleStringUtility.h" />
+    <ClInclude Include="eck\LunarDateTimeHelper.h" />
+    <ClInclude Include="eck\Lyric.h" />
+    <ClInclude Include="eck\MediaTagApe.h" />
+    <ClInclude Include="eck\MediaTagFlac.h" />
+    <ClInclude Include="eck\MediaTagID3v1.h" />
+    <ClInclude Include="eck\MediaTagID3v2.h" />
+    <ClInclude Include="eck\MediaTagMpeg.h" />
+    <ClInclude Include="eck\MemUtility.h" />
+    <ClInclude Include="eck\MultiFrameImage.h" />
+    <ClInclude Include="eck\CInertialScrollView.h" />
+    <ClInclude Include="eck\CIni.h" />
+    <ClInclude Include="eck\CLayoutBase.h" />
+    <ClInclude Include="eck\CLinearLayout.h" />
+    <ClInclude Include="eck\CLink.h" />
+    <ClInclude Include="eck\CScrollBarHook.h" />
+    <ClInclude Include="eck\CStreamWalker.h" />
+    <ClInclude Include="eck\MediaTag.h" />
+    <ClInclude Include="eck\CPictureBox.h" />
+    <ClInclude Include="eck\CProgressBar.h" />
+    <ClInclude Include="eck\CQueueTimer.h" />
+    <ClInclude Include="eck\CSplitLayout.h" />
+    <ClInclude Include="eck\CSrwLock.h" />
+    <ClInclude Include="eck\CTrackBar.h" />
+    <ClInclude Include="eck\CTreeListExt.h" />
+    <ClInclude Include="eck\CWindowPosSetting.h" />
+    <ClInclude Include="eck\DuiBase.h" />
+    <ClInclude Include="eck\CEditExt.h" />
+    <ClInclude Include="eck\CFile.h" />
+    <ClInclude Include="eck\CFlowLayout.h" />
+    <ClInclude Include="eck\CForm.h" />
+    <ClInclude Include="eck\CInputBox.h" />
+    <ClInclude Include="eck\CListBoxNew.h" />
+    <ClInclude Include="eck\CListViewExt.h" />
+    <ClInclude Include="eck\CMemWalker.h" />
+    <ClInclude Include="eck\CMenu.h" />
+    <ClInclude Include="eck\CRefBinStream.h" />
+    <ClInclude Include="eck\CRegKey.h" />
+    <ClInclude Include="eck\CScrollView.h" />
+    <ClInclude Include="eck\CSplitBar.h" />
+    <ClInclude Include="eck\CStreamView.h" />
+    <ClInclude Include="eck\CToolTip.h" />
+    <ClInclude Include="eck\CTreeList.h" />
+    <ClInclude Include="eck\CtrlGraphics.h" />
+    <ClInclude Include="eck\CWindowMask.h" />
+    <ClInclude Include="eck\GraphicsHelper.h" />
+    <ClInclude Include="eck\ILayout.h" />
+    <ClInclude Include="eck\ITimeLine.h" />
+    <ClInclude Include="eck\NativeWrapper.h" />
+    <ClInclude Include="eck\NetworkHelper.h" />
+    <ClInclude Include="eck\ObjectAttribute.h" />
+    <ClInclude Include="eck\CDataObjectHDrop.h" />
+    <ClInclude Include="eck\PhysicalDriveId.h" />
+    <ClInclude Include="eck\PrivateApi.h" />
+    <ClInclude Include="eck\PchInc.h" />
+    <ClInclude Include="eck\CTab.h" />
+    <ClInclude Include="eck\CTabHeader.h" />
+    <ClInclude Include="eck\CTaskGroupList.h" />
+    <ClInclude Include="eck\CHeader.h" />
+    <ClInclude Include="eck\CHotKey.h" />
+    <ClInclude Include="eck\CListView.h" />
+    <ClInclude Include="eck\CLunarCalendar.h" />
+    <ClInclude Include="eck\CPropertySheet.h" />
+    <ClInclude Include="eck\CRefBin.h" />
+    <ClInclude Include="eck\CButton.h" />
+    <ClInclude Include="eck\CColorPicker.h" />
+    <ClInclude Include="eck\CEdit.h" />
+    <ClInclude Include="eck\CCommDlg.h" />
+    <ClInclude Include="eck\CLabel.h" />
+    <ClInclude Include="eck\CListBox.h" />
+    <ClInclude Include="eck\CListBoxExt.h" />
+    <ClInclude Include="eck\CRefStr.h" />
+    <ClInclude Include="eck\CStatic.h" />
+    <ClInclude Include="eck\CToolBar.h" />
+    <ClInclude Include="eck\CTreeView.h" />
+    <ClInclude Include="eck\CUpDown.h" />
+    <ClInclude Include="eck\CWnd.h" />
+    <ClInclude Include="eck\DesignerDef.h" />
+    <ClInclude Include="eck\DlgTemplate.h" />
+    <ClInclude Include="eck\EasingCurve.h" />
+    <ClInclude Include="eck\ECK.h" />
+    <ClInclude Include="eck\Env.h" />
+    <ClInclude Include="eck\ImageHelper.h" />
+    <ClInclude Include="eck\LunarDateLib.h" />
+    <ClInclude Include="eck\MathHelper.h" />
+    <ClInclude Include="eck\CProcessorUsage.h" />
+    <ClInclude Include="eck\ProcThrdHelper.h" />
+    <ClInclude Include="eck\CRelativeLayout.h" />
+    <ClInclude Include="eck\Snapshot.h" />
+    <ClInclude Include="eck\StringConvert.h" />
+    <ClInclude Include="eck\StringUtility.h" />
+    <ClInclude Include="eck\SymbolHelper.h" />
+    <ClInclude Include="eck\TextSrvDef.h" />
+    <ClInclude Include="eck\ShellHelper.h" />
+    <ClInclude Include="eck\CImageMat.h" />
+    <ClInclude Include="eck\SystemHelper.h" />
+    <ClInclude Include="eck\ThreadPool.h" />
+    <ClInclude Include="eck\UIAccess.h" />
+    <ClInclude Include="eck\Utility.h" />
+    <ClInclude Include="eck\Utility2.h" />
+    <ClInclude Include="eck\WinRtD2DInteropFx.h" />
+    <ClInclude Include="eck\WinRtDCompInterop.h" />
+    <ClInclude Include="eck\WndHelper.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CTestWnd.cpp" />
+    <ClCompile Include="eck\CScrollBar.h" />
+    <ClCompile Include="eck\DesignerDef.cpp" />
+    <ClCompile Include="eck\ECK.cpp" />
+    <ClCompile Include="t_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Win32Template.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
