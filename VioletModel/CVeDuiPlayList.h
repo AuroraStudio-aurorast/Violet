@@ -376,6 +376,24 @@ private:
 
 		}	//m_pDC->PopLayer();
 
+		const D2D1_RECT_F rcTop{ 0.f, 0.f, GetWidthF(), m_bTopFadeHeight };
+		D2D1_RECT_F rcTopSample;
+		if (eck::IntersectRect(rcTopSample, rcTop, ps.rcfClipInElem))
+		{
+			D2D1_MATRIX_3X2_F Mat;
+			m_pDC->GetTransform(&Mat);
+			auto rcSampleInBmp{ rcTopSample };
+			eck::OffsetRect(rcSampleInBmp, Mat.dx, Mat.dy);
+
+			ProgressiveBlurD2dDC(
+				m_pDC,
+				eck::g_pD2DFactory,
+				rcSampleInBmp,                                    
+				{ rcTopSample.left, rcTopSample.top },            
+				10.0f,                                            // 最强端 sigma
+				BlurDirection::TopToBottom,
+				0.f);
+		}
 	}
 
 public:
