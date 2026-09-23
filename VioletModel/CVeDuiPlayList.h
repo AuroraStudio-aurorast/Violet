@@ -360,6 +360,11 @@ private:
 		}
 	}
 	void PostPaint(eck::Dui::ELEMPAINTSTRU& ps) override {
+		float dpiX{};
+		float dpiY{};
+		double Zoom;
+		m_pDC->GetDpi(&dpiX, &dpiY);
+		Zoom = dpiX / 96;
 		if (m_bTopFade) {
 
 			const D2D1_RECT_F rcTop{ 0.f,0.f,GetWidthF(),m_bTopFadeHeight };
@@ -384,7 +389,7 @@ private:
 			m_pDC->GetTransform(&Mat);
 			auto rcSampleInBmp{ rcTopSample };
 			eck::OffsetRect(rcSampleInBmp, Mat.dx, Mat.dy);
-
+			
 			ProgressiveBlurD2dDC(
 				m_pDC,
 				eck::g_pD2DFactory,
@@ -393,6 +398,7 @@ private:
 				10.0f,                                            // 最强端 sigma
 				BlurDirection::TopToBottom,
 				0.f);
+			
 		}
 	}
 

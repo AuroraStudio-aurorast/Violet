@@ -22,13 +22,16 @@ SamplerState InputSampler : register(s0);
 
 cbuffer Constants : register(b0)
 {
-    float4 Rect;          // (0, 0, W, H)
+    float4 Rect;
     float2 Origin;
     float2 Direction;
     float  MaxSigma;
     float  BlurExtent;
     float  Falloff;
     float  KernelRadius;
+    float2 BlurAxis;
+    float  PassIndex;
+    float  Padding;
 };
 
 struct PSInput
@@ -38,49 +41,58 @@ struct PSInput
     float4 uv0      : TEXCOORD0;
 };
 
-#define SAMPLES 64
-static const float GOLDEN_ANGLE = 2.39996323;
+#define HALF_N 6
+
+float4 Blur1D(float2 uv, float2 dir, float sigma, float2 imgSize)
+{
+    float2 stepUV = dir * (sigma / 3.0) / imgSize;
+    float4 sum  = InputTexture.Sample(InputSampler, saturate(uv));
+    float  wsum = 1.0;
+
+    [loop]
+    for (int i = 1; i <= HALF_N; ++i)
+    {
+        float fi = (float)i;
+        float w  = exp(-0.5 * (fi / 3.0) * (fi / 3.0));
+        float2 o = stepUV * fi;
+        sum  += InputTexture.Sample(InputSampler, saturate(uv + o)) * w;
+        sum  += InputTexture.Sample(InputSampler, saturate(uv - o)) * w;
+        wsum += 2.0 * w;
+    }
+    return sum / wsum;
+}
 
 float4 main(PSInput input) : SV_TARGET
 {
-    float2 imgSize  = Rect.zw - Rect.xy;
-    float2 uv       = input.uv0.xy;
-    float2 pixelPos = uv * imgSize + Rect.xy;
+    float2 uv = input.uv0.xy;
 
-    // ---- 位置相关的 sigma ----
+    float2 imgSize = Rect.zw;
+    if (imgSize.x < 1.0) imgSize.x = 1.0;
+    if (imgSize.y < 1.0) imgSize.y = 1.0;
+
+    float2 pixelPos = uv * imgSize;
+
     float dist  = dot(pixelPos - Origin, Direction);
     float t     = saturate(dist / max(BlurExtent, 1.0));
     float sigma = MaxSigma * pow(1.0 - t, Falloff);
 
-    // 模糊太弱就直接采样原图，省性能
-    if (sigma < 0.4)
-        return InputTexture.Sample(InputSampler, uv);
+    if (sigma < 0.3)
+        return InputTexture.Sample(InputSampler, saturate(uv));
 
-    float2 invSize = 1.0 / max(imgSize, float2(1, 1));
+    float2 stepY = float2(0.0, (sigma / 3.0) / imgSize.y);
 
-    // ---- 二维黄金螺旋采样 ----
-    float4 sum  = InputTexture.Sample(InputSampler, uv);
+    float4 sum  = Blur1D(uv, float2(1.0, 0.0), sigma, imgSize);
     float  wsum = 1.0;
 
-    float radiusScale = sigma * 3.0;   // 覆盖 3σ
-
     [loop]
-    for (int i = 1; i < SAMPLES; ++i)
+    for (int j = 1; j <= HALF_N; ++j)
     {
-        float fi = (float)i;
-        // 面积均匀分布（r 的平方与 i 成正比）
-        float r  = sqrt(fi / (float)(SAMPLES - 1));   // 0..1
-        float theta = fi * GOLDEN_ANGLE;
-
-        // 像素空间圆盘 → UV 空间
-        float2 offsetPix = float2(cos(theta), sin(theta)) * r * radiusScale;
-        float2 offsetUV  = offsetPix * invSize;
-
-        // 高斯权重：r=0 → 1，r=1 → exp(-4.5) ≈ 0.011
-        float w = exp(-4.5 * r * r);
-
-        sum  += InputTexture.Sample(InputSampler, uv + offsetUV) * w;
-        wsum += w;
+        float fj = (float)j;
+        float w  = exp(-0.5 * (fj / 3.0) * (fj / 3.0));
+        float2 o = stepY * fj;
+        sum  += Blur1D(uv + o, float2(1.0, 0.0), sigma, imgSize) * w;
+        sum  += Blur1D(uv - o, float2(1.0, 0.0), sigma, imgSize) * w;
+        wsum += 2.0 * w;
     }
 
     return sum / wsum;
@@ -105,7 +117,10 @@ struct PBConstants
 	float blurExtent;     // offset 36
 	float falloff;        // offset 40
 	float kernelRadius;   // offset 44
-};                        // 总 48 字节 ✓
+	float blurAxis[2];    // offset 48
+	float passIndex;      // offset 56
+	float padding;        // offset 60
+};
 
 // 全局参数（单线程 UI 场景可直接用）
 static PBConstants g_pbConstants = {};
@@ -116,17 +131,18 @@ static PBConstants g_pbConstants = {};
 class ProgressiveBlurTransform : public ID2D1DrawTransform
 {
 public:
-	ProgressiveBlurTransform() : m_ref(1), m_drawInfo(nullptr) {}
+	ProgressiveBlurTransform(float ax, float ay, float passIdx)
+		: m_ref(1), m_drawInfo(nullptr), m_passIndex(passIdx)
+	{
+		m_axis[0] = ax;
+		m_axis[1] = ay;
+	}
 	~ProgressiveBlurTransform()
 	{
 		if (m_drawInfo) { m_drawInfo->Release(); m_drawInfo = nullptr; }
 	}
 
-	// ---- IUnknown ----
-	IFACEMETHOD_(ULONG, AddRef)() override
-	{
-		return InterlockedIncrement(&m_ref);
-	}
+	IFACEMETHOD_(ULONG, AddRef)() override { return InterlockedIncrement(&m_ref); }
 	IFACEMETHOD_(ULONG, Release)() override
 	{
 		ULONG c = InterlockedDecrement(&m_ref);
@@ -149,29 +165,24 @@ public:
 		return E_NOINTERFACE;
 	}
 
-	// ---- ID2D1TransformNode ----
 	IFACEMETHOD_(UINT32, GetInputCount)() const override { return 1; }
 
-	// ---- ID2D1Transform ----
 	IFACEMETHOD(MapOutputRectToInputRects)(
 		const D2D1_RECT_L* out, D2D1_RECT_L* in, UINT32 count) const override
 	{
 		if (!out || !in || count < 1) return E_INVALIDARG;
-		const int pad = (int)(g_pbConstants.maxSigma * 3.0f + 2.0f);
-		in[0].left = out->left - pad;
-		in[0].top = out->top - pad;
-		in[0].right = out->right + pad;
-		in[0].bottom = out->bottom + pad;
+
+		in[0] = *out;
 		return S_OK;
 	}
 
 	IFACEMETHOD(MapInputRectsToOutputRect)(
-		const D2D1_RECT_L* in, const D2D1_RECT_L*, UINT32 count,
+		const D2D1_RECT_L* in, const D2D1_RECT_L* inOp, UINT32 count,
 		D2D1_RECT_L* out, D2D1_RECT_L* outOp) override
 	{
 		if (!in || !out || !outOp || count < 1) return E_INVALIDARG;
 		*out = in[0];
-		*outOp = D2D1::RectL(0, 0, 0, 0);
+		*outOp = in[0];   // 关键：整个输出都是不透明的
 		return S_OK;
 	}
 
@@ -183,43 +194,33 @@ public:
 		return S_OK;
 	}
 
-	// ---- ID2D1DrawTransform ----
 	IFACEMETHOD(SetDrawInfo)(ID2D1DrawInfo* drawInfo) override
 	{
-		OutputDebugStringA("[PB] SetDrawInfo called\n");
-
 		if (m_drawInfo) { m_drawInfo->Release(); m_drawInfo = nullptr; }
 		m_drawInfo = drawInfo;
 		if (m_drawInfo) m_drawInfo->AddRef();
-
-		if (!m_drawInfo)
-		{
-			OutputDebugStringA("[PB] drawInfo is NULL\n");
-			return E_FAIL;
-		}
-
-		HRESULT hr = m_drawInfo->SetPixelShader(GUID_ProgressiveBlurPS);
-		char buf[128];
-		sprintf_s(buf, "[PB] SetPixelShader hr=0x%08X\n", (unsigned)hr);
-		OutputDebugStringA(buf);
-		return hr;
+		if (!m_drawInfo) return E_FAIL;
+		return m_drawInfo->SetPixelShader(GUID_ProgressiveBlurPS);
 	}
 
 	HRESULT UpdateConstants()
 	{
-		if (!m_drawInfo) { OutputDebugStringA("[PB] UpdateConstants: no drawInfo\n"); return E_FAIL; }
-		HRESULT hr = m_drawInfo->SetPixelShaderConstantBuffer(
-			reinterpret_cast<const BYTE*>(&g_pbConstants),
-			sizeof(g_pbConstants));
-		char buf[128];
-		sprintf_s(buf, "[PB] SetConstantBuffer hr=0x%08X\n", (unsigned)hr);
-		OutputDebugStringA(buf);
-		return hr;
+		if (!m_drawInfo) return E_FAIL;
+
+		PBConstants local = g_pbConstants;
+		local.blurAxis[0] = m_axis[0];
+		local.blurAxis[1] = m_axis[1];
+		local.passIndex = m_passIndex;
+
+		return m_drawInfo->SetPixelShaderConstantBuffer(
+			reinterpret_cast<const BYTE*>(&local), sizeof(local));
 	}
 
 private:
 	LONG m_ref;
 	ID2D1DrawInfo* m_drawInfo;
+	float m_axis[2];
+	float m_passIndex;
 };
 
 // ============================================================
@@ -231,14 +232,10 @@ public:
 	ProgressiveBlurEffect() : m_ref(1), m_transform(nullptr) {}
 	~ProgressiveBlurEffect()
 	{
-		if (m_transform) { m_transform->Release(); m_transform = nullptr; }
+		if (m_transform) m_transform->Release();
 	}
 
-	// ---- IUnknown ----
-	IFACEMETHOD_(ULONG, AddRef)() override
-	{
-		return InterlockedIncrement(&m_ref);
-	}
+	IFACEMETHOD_(ULONG, AddRef)() override { return InterlockedIncrement(&m_ref); }
 	IFACEMETHOD_(ULONG, Release)() override
 	{
 		ULONG c = InterlockedDecrement(&m_ref);
@@ -248,8 +245,7 @@ public:
 	IFACEMETHOD(QueryInterface)(REFIID riid, void** ppv) override
 	{
 		if (!ppv) return E_POINTER;
-		if (riid == __uuidof(IUnknown) ||
-			riid == __uuidof(ID2D1EffectImpl))
+		if (riid == __uuidof(IUnknown) || riid == __uuidof(ID2D1EffectImpl))
 		{
 			*ppv = static_cast<ID2D1EffectImpl*>(this);
 			AddRef();
@@ -259,7 +255,6 @@ public:
 		return E_NOINTERFACE;
 	}
 
-	// ---- ID2D1EffectImpl ----
 	IFACEMETHOD(Initialize)(ID2D1EffectContext* ctx,
 		ID2D1TransformGraph* graph) override
 	{
@@ -269,25 +264,16 @@ public:
 			ID3DBlob* code = nullptr;
 			ID3DBlob* err = nullptr;
 			HRESULT hr = D3DCompile(
-				g_pszProgressiveBlurHLSL,
-				sizeof(g_pszProgressiveBlurHLSL) - 1,
-				nullptr, nullptr, nullptr,
-				"main", "ps_4_0",
-				D3DCOMPILE_OPTIMIZATION_LEVEL3, 0,
-				&code, &err);
+				g_pszProgressiveBlurHLSL, sizeof(g_pszProgressiveBlurHLSL) - 1,
+				nullptr, nullptr, nullptr, "main", "ps_4_0",
+				D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &code, &err);
 
 			if (FAILED(hr))
 			{
-				if (err)
-				{
-					OutputDebugStringA("[PB] D3DCompile FAILED:\n");
-					OutputDebugStringA((LPCSTR)err->GetBufferPointer());
-					err->Release();
-				}
+				if (err) { OutputDebugStringA((LPCSTR)err->GetBufferPointer()); err->Release(); }
 				if (code) code->Release();
 				return hr;
 			}
-			OutputDebugStringA("[PB] D3DCompile OK\n");
 
 			hr = ctx->LoadPixelShader(GUID_ProgressiveBlurPS,
 				(const BYTE*)code->GetBufferPointer(),
@@ -295,37 +281,22 @@ public:
 
 			code->Release();
 			if (err) err->Release();
-
-			if (FAILED(hr))
-			{
-				char buf[128];
-				sprintf_s(buf, "[PB] LoadPixelShader FAILED hr=0x%08X\n", (unsigned)hr);
-				OutputDebugStringA(buf);
-				return hr;
-			}
-			OutputDebugStringA("[PB] LoadPixelShader OK\n");
+			if (FAILED(hr)) return hr;
 			s_shaderLoaded = true;
 		}
 
-		m_transform = new (std::nothrow) ProgressiveBlurTransform();
+		m_transform = new (std::nothrow) ProgressiveBlurTransform(0.0f, 0.0f, 0.0f);
 		if (!m_transform) return E_OUTOFMEMORY;
 
 		HRESULT hr2 = graph->SetSingleTransformNode(m_transform);
-		if (FAILED(hr2))
-		{
-			char buf[128];
-			sprintf_s(buf, "[PB] SetSingleTransformNode FAILED hr=0x%08X\n", (unsigned)hr2);
-			OutputDebugStringA(buf);
-			return hr2;
-		}
-		OutputDebugStringA("[PB] SetSingleTransformNode OK\n");
+		if (FAILED(hr2)) return hr2;
 		return S_OK;
 	}
 
 	IFACEMETHOD(PrepareForRender)(D2D1_CHANGE_TYPE) override
 	{
-		if (!m_transform) return E_FAIL;
-		return m_transform->UpdateConstants();
+		if (m_transform) return m_transform->UpdateConstants();
+		return E_FAIL;
 	}
 
 	IFACEMETHOD(SetGraph)(ID2D1TransformGraph*) override { return E_NOTIMPL; }
@@ -527,61 +498,72 @@ HRESULT ProgressiveBlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
 
 	pDC->Flush();
 
-	// ---- 拷贝源区域到临时位图 ----
+	const D2D1_SIZE_U szBmp = pBmp->GetPixelSize();
+
+	INT32 l = (INT32)floorf(rc.left * (float)Zoom);
+	INT32 t = (INT32)floorf(rc.top * (float)Zoom);
+	INT32 r = (INT32)ceilf(rc.right * (float)Zoom);
+	INT32 b = (INT32)ceilf(rc.bottom * (float)Zoom);
+
+	if (l < 0) l = 0;
+	if (t < 0) t = 0;
+	if (r > (INT32)szBmp.width)  r = (INT32)szBmp.width;
+	if (b > (INT32)szBmp.height) b = (INT32)szBmp.height;
+	if (r <= l) r = l + 1;
+	if (b <= t) b = t + 1;
+
+	const UINT32 W_phys = (UINT32)(r - l);
+	const UINT32 H_phys = (UINT32)(b - t);
+
+	const float srcLeftDip = l / (float)Zoom;
+	const float srcTopDip = t / (float)Zoom;
+	const float W_dip = W_phys / (float)Zoom;
+	const float H_dip = H_phys / (float)Zoom;
+
+	const float destX = point.x + (srcLeftDip - rc.left);
+	const float destY = point.y + (srcTopDip - rc.top);
+
 	ComPtr<ID2D1Bitmap> pBmpSrc;
 	hr = pDC->CreateBitmap(
-		{ (UINT32)((rc.right - rc.left) * Zoom),
-		  (UINT32)((rc.bottom - rc.top) * Zoom) },
+		{ W_phys, H_phys },
 		NULL, 0,
 		D2D1::BitmapProperties(pBmp->GetPixelFormat(), dpiX, dpiY),
 		&pBmpSrc);
 	if (FAILED(hr)) return hr;
 
-	const D2D1_RECT_U rcU{
-		(UINT32)(rc.left * Zoom), (UINT32)(rc.top * Zoom),
-		(UINT32)(rc.right * Zoom), (UINT32)(rc.bottom * Zoom) };
-	pBmpSrc->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
-
-	// ---- 创建自定义效果 ----
-	ComPtr<ID2D1Effect> pEffect;
-	hr = pDC->CreateEffect(CLSID_ProgressiveBlurEffect, &pEffect);
+	const D2D1_RECT_U rcU{ (UINT32)l, (UINT32)t, (UINT32)r, (UINT32)b };
+	hr = pBmpSrc->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
 	if (FAILED(hr)) return hr;
-	pEffect->SetInput(0, pBmpSrc.Get());
 
-	// ---- 计算图像尺寸 ----
-	const float W = (float)((rc.right - rc.left) * Zoom);
-	const float H = (float)((rc.bottom - rc.top) * Zoom);
+	const float Wf = (float)W_phys;
+	const float Hf = (float)H_phys;
 
-	// ---- 根据方向枚举决定 Origin 和 Direction ----
-	// 说明：坐标系为临时位图局部坐标，(0,0) 在左上，(W,H) 在右下
-	// Origin 指向"模糊最强端"的位置
 	float ox = 0.0f, oy = 0.0f;
 	float dx = 0.0f, dy = 1.0f;
 	switch (direction)
 	{
-	case BlurDirection::TopToBottom:   // 上 -> 下（最模糊在上）
+	case BlurDirection::TopToBottom:
 		ox = 0.0f; oy = 0.0f;
 		dx = 0.0f; dy = 1.0f;
 		break;
-	case BlurDirection::BottomToTop:   // 下 -> 上（最模糊在下）
-		ox = 0.0f; oy = H;
+	case BlurDirection::BottomToTop:
+		ox = 0.0f; oy = Hf;
 		dx = 0.0f; dy = -1.0f;
 		break;
-	case BlurDirection::LeftToRight:   // 左 -> 右（最模糊在左）
+	case BlurDirection::LeftToRight:
 		ox = 0.0f; oy = 0.0f;
 		dx = 1.0f; dy = 0.0f;
 		break;
-	case BlurDirection::RightToLeft:   // 右 -> 左（最模糊在右）
-		ox = W;    oy = 0.0f;
+	case BlurDirection::RightToLeft:
+		ox = Wf;   oy = 0.0f;
 		dx = -1.0f; dy = 0.0f;
 		break;
 	}
 
-	// ---- 填 shader 常量 ----
 	g_pbConstants.rect[0] = 0.0f;
 	g_pbConstants.rect[1] = 0.0f;
-	g_pbConstants.rect[2] = W;
-	g_pbConstants.rect[3] = H;
+	g_pbConstants.rect[2] = Wf;
+	g_pbConstants.rect[3] = Hf;
 
 	g_pbConstants.origin[0] = ox;
 	g_pbConstants.origin[1] = oy;
@@ -590,82 +572,105 @@ HRESULT ProgressiveBlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
 	g_pbConstants.direction[1] = dy;
 
 	g_pbConstants.maxSigma = (fMaxDeviation > 0.0f) ? fMaxDeviation : 12.0f;
-	// 过渡距离取方向上的总跨度
-	g_pbConstants.blurExtent = (dx != 0.0f) ? W : H;
-	g_pbConstants.falloff = 1.4f;   // iOS 观感 1.2 ~ 1.6
-	g_pbConstants.kernelRadius = 12.0f;  // 与 HLSL 循环上界一致
+	g_pbConstants.blurExtent = (dx != 0.0f) ? Wf : Hf;
+	g_pbConstants.falloff = 1.4f;
+	g_pbConstants.kernelRadius = 12.0f;
 
-	// ---- 圆角遮罩 + 绘制 ----
+	ComPtr<ID2D1Effect> pEffect;
+	hr = pDC->CreateEffect(CLSID_ProgressiveBlurEffect, &pEffect);
+	if (FAILED(hr)) return hr;
+	pEffect->SetInput(0, pBmpSrc.Get());
+
 	const auto iBlend = pDC->GetPrimitiveBlend();
 	pDC->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
 
 	RoundedRectMaskD2dDC(pDC, pFactory,
-		D2D1::RectF(point.x * Zoom, point.y * Zoom,
-			point.x * Zoom + W, point.y * Zoom + H),
-		(float)(borderRadius * Zoom));
+		D2D1::RectF(destX, destY, destX + W_dip, destY + H_dip),
+		(float)borderRadius);
 
 	pDC->Clear(D2D1::ColorF(0x000000, 0));
-	pDC->DrawImage(pEffect.Get(),
-		D2D1::Point2F((float)(point.x * Zoom), (float)(point.y * Zoom)));
+	pDC->DrawImage(pEffect.Get(), D2D1::Point2F(destX, destY));
 	pDC->PopLayer();
 	pDC->SetPrimitiveBlend(iBlend);
 
 	return S_OK;
 }
 
-HRESULT OpacityMaskD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory, const D2D1_RECT_F& rc, D2D1_POINT_2F point, ID2D1Brush* opacityBrush, double borderRadius)
+HRESULT OpacityMaskD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
+	const D2D1_RECT_F& rc, D2D1_POINT_2F point,
+	ID2D1Brush* opacityBrush, double borderRadius)
 {
 	ComPtr<ID2D1Bitmap1> pBmp;
-	ComPtr<ID2D1Image> pTarget;
+	ComPtr<ID2D1Image>   pTarget;
 	pDC->GetTarget(&pTarget);
 	pTarget->QueryInterface(&pBmp);
-	if (pBmp.Get() != nullptr) {
-		HRESULT hr;
-		ComPtr<ID2D1Effect> pEffect;
-		float dpiX{};
-		float dpiY{};
-		double Zoom;
-		pDC->GetDpi(&dpiX, &dpiY);
-		Zoom = dpiX / 96;
-
-		pDC->Flush();
-		//pDC->SetDpi(96, 96);
-
-
-		ComPtr<ID2D1Bitmap> pBmpEffect;
-		hr = pDC->CreateBitmap({ (UINT32)((rc.right - rc.left) * Zoom), (UINT32)((rc.bottom - rc.top) * Zoom) },
-			NULL, 0, D2D1::BitmapProperties(pBmp->GetPixelFormat(), dpiX, dpiY), &pBmpEffect);
-		if (FAILED(hr))
-			return hr;
-		const D2D1_RECT_U rcU{ (UINT32)(rc.left * Zoom), (UINT32)(rc.top * Zoom), (UINT32)(rc.right * Zoom), (UINT32)(rc.bottom * Zoom) };
-		pBmpEffect->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
-
-		const auto iBlend = pDC->GetPrimitiveBlend();
-		pDC->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
-		
-		D2D1_LAYER_PARAMETERS1 LyParam{ D2D1::LayerParameters1() };
-		//LyParam.contentBounds = { 0.f,0.f,rc.right - rc.left,rc.bottom - rc.top };
-		LyParam.contentBounds = { point.x,point.y,point.x + rc.right - rc.left,point.y + rc.bottom - rc.top };
-		LyParam.opacityBrush = opacityBrush;
-
-		pDC->PushLayer(&LyParam, NULL);
-		pDC->Clear(D2D1::ColorF(0x000000, 0));
-		//pDC->SetDpi(96, 96);
-
-		//pDC->DrawImage(pBmpEffect.Get(), D2D1::Point2(point.x * Zoom, point.y * Zoom));
-		pDC->DrawImage(pBmpEffect.Get(), point);
-		//pDC->SetTransform(D2D1::Matrix3x2F::Scale(1, 1));
-		//pDC->SetDpi(96 * Zoom, 96 * Zoom);
-		pDC->PopLayer();
-		pDC->SetPrimitiveBlend(iBlend);
-		//pDC->SetDpi(dpiX, dpiY);
-		//pBmpEffect->Release();
-		//pEffect->Release();
-		return S_OK;
-	}
-	else {
+	if (pBmp.Get() == nullptr)
 		return S_FALSE;
-	}
+
+	HRESULT hr;
+	float dpiX{}, dpiY{};
+	pDC->GetDpi(&dpiX, &dpiY);
+	const double Zoom = dpiX / 96.0;
+
+	pDC->Flush();
+
+	const D2D1_SIZE_U szBmp = pBmp->GetPixelSize();
+
+	INT32 l = (INT32)floorf(rc.left * (float)Zoom);
+	INT32 t = (INT32)floorf(rc.top * (float)Zoom);
+	INT32 r = (INT32)ceilf(rc.right * (float)Zoom);
+	INT32 b = (INT32)ceilf(rc.bottom * (float)Zoom);
+
+	if (l < 0) l = 0;
+	if (t < 0) t = 0;
+	if (r > (INT32)szBmp.width)  r = (INT32)szBmp.width;
+	if (b > (INT32)szBmp.height) b = (INT32)szBmp.height;
+	if (r <= l) r = l + 1;
+	if (b <= t) b = t + 1;
+
+	const UINT32 W_phys = (UINT32)(r - l);
+	const UINT32 H_phys = (UINT32)(b - t);
+
+	const float srcLeftDip = l / (float)Zoom;
+	const float srcTopDip = t / (float)Zoom;
+	const float W_dip = W_phys / (float)Zoom;
+	const float H_dip = H_phys / (float)Zoom;
+
+	const float destX = point.x + (srcLeftDip - rc.left);
+	const float destY = point.y + (srcTopDip - rc.top);
+
+	ComPtr<ID2D1Bitmap> pBmpEffect;
+	hr = pDC->CreateBitmap(
+		{ W_phys, H_phys }, NULL, 0,
+		D2D1::BitmapProperties(pBmp->GetPixelFormat(), dpiX, dpiY),
+		&pBmpEffect);
+	if (FAILED(hr)) return hr;
+
+	const D2D1_RECT_U rcU{ (UINT32)l, (UINT32)t, (UINT32)r, (UINT32)b };
+	hr = pBmpEffect->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
+	if (FAILED(hr)) return hr;
+
+	const auto iBlend = pDC->GetPrimitiveBlend();
+	pDC->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
+
+	D2D1_LAYER_PARAMETERS1 LyParam{ D2D1::LayerParameters1() };
+	LyParam.contentBounds = D2D1::RectF(destX, destY,
+		destX + W_dip, destY + H_dip);
+	LyParam.opacityBrush = opacityBrush;
+
+	pDC->PushLayer(&LyParam, NULL);
+
+	pDC->DrawImage(
+		pBmpEffect.Get(),
+		D2D1::Point2F(destX, destY),
+		D2D1::RectF(0, 0, W_dip, H_dip),
+		D2D1_INTERPOLATION_MODE_LINEAR,
+		D2D1_COMPOSITE_MODE_SOURCE_OVER);
+
+	pDC->PopLayer();
+	pDC->SetPrimitiveBlend(iBlend);
+
+	return S_OK;
 }
 
 void OYM_CvsCreateText(ID2D1DeviceContext* pContext, LPCWSTR lpText, LPCWSTR lpFont, INT nSize, BOOL bBold, D2D1_RECT_F rect, DWRITE_PARAGRAPH_ALIGNMENT parAlign, DWRITE_TEXT_ALIGNMENT textAlign, BOOL bWrap, IDWriteTextFormat** pTextFormat, IDWriteTextLayout** pTextLayout)
