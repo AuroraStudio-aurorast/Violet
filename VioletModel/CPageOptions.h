@@ -23,6 +23,8 @@ private:
 	CVeImage m_AboutOptLogo{};
 	CVeImage m_AboutOptStudioLogo{};
 	CVeButton m_BTAboutOptRgUUID{};
+	CVeFadeOverlay m_FadeOverlay{};
+
 
 public:
 	void SwitchPage(int index);

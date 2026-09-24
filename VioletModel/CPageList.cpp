@@ -494,7 +494,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_BTAddFile.showBorder(true);
             m_BTAddFile.blurBkg(true);
             m_BTAddFile.setImgPadding(8.f);
-            m_LytTopBar.Add(&m_BTAddFile, { .cxLeftWidth = (int)CxPageIntPadding }, eck::LF_FIX);
+            m_LytTopBar.Add(&m_BTAddFile, { .cxLeftWidth = (int)CxPageIntPadding * 2 }, eck::LF_FIX);
 
             m_BTLocate.Create(m_AppLang.LANG_ID_PLAYLIST_LOCATE, Dui::DES_VISIBLE | Dui::DES_CONTENT_EXPAND, 0,
                 0, 0, 100, CyStdEdit, this);
@@ -514,7 +514,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_EDSearchItem.blurBkg(true);
             m_EDSearchItem.setCueBanner(m_AppLang.LANG_ID_PLAYLIST_SEARCHSONG);
 
-            m_LytTopBar.Add(&m_EDSearchItem, { .cxRightWidth = (int)CxPageIntPadding }, eck::LF_FIX | eck::LF_ALIGN_FAR);
+            m_LytTopBar.Add(&m_EDSearchItem, { .cxRightWidth = (int)CxPageIntPadding * 2 }, eck::LF_FIX | eck::LF_ALIGN_FAR);
 
 
             m_LytList.Add(&m_LATopBarSpacer, { .cyTopHeight = 0, .cyBottomHeight = (int)CxPageIntPadding },
@@ -537,6 +537,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //m_GLList.SetTopExtraSpace(Dui::CListTemplate::CyDefHeader);
             m_GLList.SetTopExtraSpace(CxPageIntPadding + CyStdEdit + CyPageTitle + DTopPageTitle + CxPageIntPadding);
             m_GLList.SetBottomExtraSpace(CyPlayPanel);
+            m_GLList.SetSidePadding(CxPageIntPadding);
             m_GLList.SetItemHeight(CyPlayListItem);
             m_GLList.SetSingleSel(FALSE);
             m_GLList.SetTextFormat(pTextFormat.Get());
@@ -546,7 +547,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_GLList.SetTopFadeHeight(CyStdEdit + CyPageTitle + DTopPageTitle + CxPageIntPadding);
             m_LytList.Add(&m_GLList, { .cyTopHeight = (int)-CxPageIntPadding - (int)CyStdEdit - (int)(CyPageTitle + DTopPageTitle + CxPageIntPadding)}, eck::LF_FILL, 1);
         }
-        m_Lyt.Add(&m_LytList, { .cxRightWidth = (int)CxPageIntPadding }, eck::LF_FILL, 1);
+        m_Lyt.Add(&m_LytList, { .cxLeftWidth = (int)-CxPageIntPadding, .cxRightWidth = 0}, eck::LF_FILL, 1);
 
         m_GLList.GetSignal().Connect(
             [&](UINT uMsg, WPARAM wParam, LPARAM lParam, eck::SlotCtx& Ctx)

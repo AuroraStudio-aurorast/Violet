@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CVeDuiScrollBar.h"
+#include "CVeFadeOverlay.h"
 
 class CVeCardCon : public Dui::CElem
 {
@@ -88,7 +89,6 @@ private:
 	float m_fTopOffset, m_fBottomOffset;
 	float m_fListHeight;
 	float m_fListPos;
-
 public:
 	void SetOffset(float TopOffset, float BottomOffset)
 	{

@@ -43,6 +43,7 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         const auto pWnd = (CWndMain*)GetWnd();
         size_t cardIndex = 0;
         size_t pageIndex = 0;
+        const int cyPageTop = (int)(CyPageTitle + DTopPageTitle + CxPageIntPadding);
 
         UpdateTitle();
         UpdateImg();
@@ -58,7 +59,7 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // 通用
         m_GenOpt.Create(nullptr, 0, 0, 0, 0, 0, 0, this);
-        m_GenOpt.SetOffset(0, CyPlayPanel);
+        m_GenOpt.SetOffset(cyPageTop, CyPlayPanel);
         m_Pages[pageIndex] = &m_GenOpt;
         cardIndex = 0;
 
@@ -71,7 +72,7 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // 外观
         m_SkinOpt.Create(nullptr, 0, 0, 0, 0, 0, 0, this);
-        m_SkinOpt.SetOffset(0, CyPlayPanel);
+        m_SkinOpt.SetOffset(cyPageTop, CyPlayPanel);
         m_Pages[pageIndex] = &m_SkinOpt;
         cardIndex = 0;
 
@@ -88,7 +89,7 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // 关于
         m_AboutOpt.Create(nullptr, 0, 0, 0, 0, 0, 0, this);
-        m_AboutOpt.SetOffset(0, CyPlayPanel);
+        m_AboutOpt.SetOffset(cyPageTop, CyPlayPanel);
         m_Pages[pageIndex] = &m_AboutOpt;
         cardIndex = 0;
 
@@ -121,7 +122,12 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         pageIndex++;
 
-        m_Lyt.Add(&m_LytPage, { .cxRightWidth = (int)CxPageIntPadding, .cyTopHeight = (int)(CyPageTitle + DTopPageTitle + CxPageIntPadding) }, eck::LF_FILL, 1);
+        m_Lyt.Add(&m_LytPage, { .cxRightWidth = (int)CxPageIntPadding }, eck::LF_FILL, 1);
+
+        m_FadeOverlay.Create(nullptr, Dui::DES_VISIBLE, 0, 0, 0, 0, 0, this);
+        m_FadeOverlay.SetTopFadeHeight(cyPageTop);
+        m_FadeOverlay.SetEnabled(true);
+
         SwitchPage(0);
         break;
     }
@@ -129,6 +135,15 @@ LRESULT CPageOptions::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         m_Lyt.Arrange((int)GetWidthF(), (int)GetHeightF());
         m_AboutOptLogo.SetSize(m_AboutOptLogo.GetParentElem()->GetWidthF(), 180);
+        const int cyPageTop = (int)(CyPageTitle + DTopPageTitle + CxPageIntPadding);
+        const int cyFadeH = cyPageTop;   // ← 渐变条高度，按需调
+
+        m_FadeOverlay.SetPos(CxListFileList - (int)CxPageIntPadding, 0);
+        m_FadeOverlay.SetSize(
+            (int)GetWidthF() - CxListFileList + (int)CxPageIntPadding * 2,
+            cyFadeH);
+        m_FadeOverlay.SetTopOffset(0.f); 
+
         break;
     }
     case WM_NOTIFY:

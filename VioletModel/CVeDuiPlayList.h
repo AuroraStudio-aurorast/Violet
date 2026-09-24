@@ -127,7 +127,7 @@ private:
 
 
 		if (e.vSubItem.size() == 4) {
-			const float xImage = (float)((m_cyItem - sizeImg.height) / 2);
+			const float xImage = (float)((m_cyItem - sizeImg.height) / 2) + m_sidePadding;
 			const float yImage = (float)((m_cyItem - sizeImg.height) / 2);
 			float xText;
 			float imgWidth = 40.f;
@@ -395,7 +395,7 @@ private:
 				eck::g_pD2DFactory,
 				rcSampleInBmp,                                    
 				{ rcTopSample.left, rcTopSample.top },            
-				10.0f,                                            // 最强端 sigma
+				10.0f,
 				BlurDirection::TopToBottom,
 				0.f);
 			

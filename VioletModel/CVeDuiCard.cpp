@@ -115,7 +115,6 @@ LRESULT CVeCard::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_pBrush->SetColor({ 0.5, 0.5, 0.5, 0.75 });
             m_pDC->DrawLine({ 0, textrcF.bottom + 0.5f }, { textrcF.right, textrcF.bottom + 0.5f }, m_pBrush);
         }
-
         ECK_DUI_DBG_DRAW_FRAME;
         EndPaint(ps);
         return 0;
@@ -192,7 +191,7 @@ void CVeCardGroup::CardUpdatePos()
 {
     m_fListPos = m_psv->GetPos();
     const float cxElem = GetWidthF(), cyElem = GetHeightF();
-    float cardTop = -m_fListPos;
+    float cardTop = m_fTopOffset - m_fListPos;
     for (auto& card : m_pCards)
     {
         const float cardHeight = card->GetCardHeight();
@@ -236,7 +235,7 @@ LRESULT CVeCardGroup::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         sbrc.left = cxElem - m_SB.GetWidthF();
         sbrc.top = m_fTopOffset;
         sbrc.right = sbrc.left + m_SB.GetWidthF();
-        sbrc.bottom = sbrc.top + cyElem - m_fBottomOffset;
+        sbrc.bottom = cyElem - m_fBottomOffset;
         m_SB.SetRect(sbrc);
         float cardTop = 0;
         for (auto& card : m_pCards)

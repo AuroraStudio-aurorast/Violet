@@ -394,6 +394,7 @@
     <ClInclude Include="CVeDuiTabList.h" />
     <ClInclude Include="CVeDuiTitleBar.h" />
     <ClInclude Include="CVeDuiTrackBar.h" />
+    <ClInclude Include="CVeFadeOverlay.h" />
     <ClInclude Include="CVeVolumeBar.h" />
     <ClInclude Include="CWndLrc.h" />
     <ClInclude Include="CWndTbGhost.h" />
@@ -438,6 +439,7 @@
     <ClCompile Include="CVeDuiTabList.cpp" />
     <ClCompile Include="CVeDuiTitleBar.cpp" />
     <ClCompile Include="CVeDuiTrackBar.cpp" />
+    <ClCompile Include="CVeFadeOverlay.cpp" />
     <ClCompile Include="CVeVolumeBar.cpp" />
     <ClCompile Include="CWndLrc.cpp" />
     <ClCompile Include="CWndMain_Shell.cpp" />

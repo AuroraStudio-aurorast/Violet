@@ -113,6 +113,8 @@ protected:
 	float m_cyTopExtra{};			// 顶部空白
 	float m_cyBottomExtra{};		// 底部空白
 
+	float m_sidePadding{};          // 侧边间距
+
 	float m_cyItem{ 40 };			// 项目高度
 	float m_cyPadding{ 3 };		// 项目间距
 
@@ -981,9 +983,9 @@ public:
 			ReCalcScroll();
 			const auto cxSB = GetTheme()->GetMetrics(eck::Dui::Metrics::CxVScroll);
 			m_SBV.SetRect({
-				GetWidthF() - cxSB,
+				GetWidthF() - cxSB - m_sidePadding,
 				m_cyTopExtra,
-				GetWidthF(),
+				GetWidthF() - m_sidePadding,
 				GetHeightF() - m_cyBottomExtra });
 			m_SBH.SetRect({ 0,GetHeightF() - cxSB,GetWidthF(),GetHeightF() });
 			ArrangeHeader();
@@ -1170,15 +1172,15 @@ public:
 		switch (m_eView)
 		{
 		case Type::List:
-			rc.left = 0;
-			rc.right = GetWidthF();
+			rc.left = m_sidePadding;
+			rc.right = GetWidthF() - m_sidePadding * 2;
 			rc.top = LVGetItemY(idx);
 			rc.bottom = rc.top + m_cyItem;
 			break;
 		case Type::Report:
 		{
-			rc.left = -m_psvH->GetPos();
-			rc.right = rc.left + m_Header.GetContentWidth();
+			rc.left = m_sidePadding - m_psvH->GetPos();
+			rc.right = rc.left + m_Header.GetContentWidth() - m_sidePadding * 2;
 			rc.top = LVGetItemY(idx);
 			rc.bottom = rc.top + m_cyItem;
 		}
@@ -1186,8 +1188,8 @@ public:
 		case Type::Icon:
 		{
 			const auto xy = IVGetItemXY(idx);
-			rc.left = xy.first;
-			rc.right = rc.left + m_cxItem;
+			rc.left = xy.first + m_sidePadding;
+			rc.right = rc.left + m_cxItem - m_sidePadding * 2;
 			rc.top = xy.second;
 			rc.bottom = rc.top + m_cyItem;
 		}
@@ -1898,6 +1900,9 @@ public:
 
 	EckInlineCe void SetBottomExtraSpace(float cy) noexcept { m_cyBottomExtra = cy; }
 	EckInlineNdCe float GetBottomExtraSpace() const noexcept { return m_cyBottomExtra; }
+
+	EckInlineCe void SetSidePadding(float cx) noexcept { m_sidePadding = cx; }
+	EckInlineNdCe float GetSidePadding() const noexcept { return m_sidePadding; }
 
 	EckInlineCe void SetGroup(BOOL bGroup) noexcept { m_bGroup = bGroup; }
 	EckInlineNdCe BOOL GetGroup() const noexcept { return m_bGroup; }
