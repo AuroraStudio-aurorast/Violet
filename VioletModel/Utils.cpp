@@ -409,72 +409,87 @@ HRESULT RoundedRectMaskXYD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
 }
 
 
-HRESULT BlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory, const D2D1_RECT_F& rc, D2D1_POINT_2F point, float fDeviation, double borderRadius)
+HRESULT BlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
+	const D2D1_RECT_F& rc, D2D1_POINT_2F point,
+	float fDeviation, double borderRadius)
 {
 	ComPtr<ID2D1Bitmap1> pBmp;
-	ComPtr<ID2D1Image> pTarget;
+	ComPtr<ID2D1Image>   pTarget;
 	pDC->GetTarget(&pTarget);
 	pTarget->QueryInterface(&pBmp);
-	if (pBmp.Get() != nullptr) {
-		HRESULT hr;
-		ComPtr<ID2D1Effect> pEffect;
-		ComPtr<ID2D1Effect> saturationEffect;
-		float dpiX{};
-		float dpiY{};
-		double Zoom;
-		pDC->GetDpi(&dpiX, &dpiY);
-		Zoom = dpiX / 96;
-
-		pDC->Flush();
-		//pDC->SetDpi(96, 96);
-		hr = pDC->CreateEffect(CLSID_D2D1GaussianBlur, &pEffect);
-		if (FAILED(hr))
-			return hr;
-		pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_HARD);
-		pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, fDeviation);
-
-		hr = pDC->CreateEffect(CLSID_D2D1Saturation, &saturationEffect);
-		if (FAILED(hr))
-			return hr;
-		saturationEffect->SetValue(D2D1_SATURATION_PROP_SATURATION, 5.f);
-
-
-		ComPtr<ID2D1Bitmap> pBmpEffect;
-		hr = pDC->CreateBitmap({ (UINT32)((rc.right - rc.left) * Zoom), (UINT32)((rc.bottom - rc.top)*Zoom) },
-			NULL, 0, D2D1::BitmapProperties(pBmp->GetPixelFormat(), dpiX, dpiY), &pBmpEffect);
-		if (FAILED(hr))
-			return hr;
-		const D2D1_RECT_U rcU{ (UINT32)(rc.left*Zoom), (UINT32)(rc.top*Zoom), (UINT32)(rc.right*Zoom), (UINT32)(rc.bottom*Zoom) };
-		pBmpEffect->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
-
-		pEffect->SetInput(0, pBmpEffect.Get());
-
-		saturationEffect->SetInputEffect(0, pEffect.Get());
-
-		const auto iBlend = pDC->GetPrimitiveBlend();
-		pDC->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
-		/*
-		pFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(point.x * Zoom, point.y * Zoom, (rc.right - rc.left), (rc.bottom - rc.top)), borderRadius * Zoom, borderRadius * Zoom), &rrect_);
-		layer_param = D2D1::LayerParameters(D2D1::InfiniteRect(), (ID2D1Geometry*)rrect_.Get(), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1::IdentityMatrix(), (1.0F), (ID2D1Brush*)0, D2D1_LAYER_OPTIONS_NONE);
-		pDC->PushLayer(&layer_param, NULL);
-		*/
-		RoundedRectMaskD2dDC(pDC, pFactory, D2D1::RectF(point.x * Zoom, point.y * Zoom, (rc.right - rc.left), (rc.bottom - rc.top)), borderRadius * Zoom);
-		pDC->Clear(D2D1::ColorF(0x000000, 0));
-		//pDC->SetDpi(96, 96);
-
-		pDC->DrawImage(saturationEffect.Get(), D2D1::Point2(point.x * Zoom,point.y * Zoom));
-		//pDC->SetTransform(D2D1::Matrix3x2F::Scale(1, 1));
-		//pDC->SetDpi(96 * Zoom, 96 * Zoom);
-		pDC->PopLayer();
-		pDC->SetPrimitiveBlend(iBlend);
-		//pDC->SetDpi(dpiX, dpiY);
-		//pBmpEffect->Release();
-		//pEffect->Release();
-		return S_OK;
-	}
-	else {
+	if (pBmp.Get() == nullptr)
 		return S_FALSE;
-	}
+
+	HRESULT hr;
+	float dpiX{}, dpiY{};
+	pDC->GetDpi(&dpiX, &dpiY);
+	const double Zoom = dpiX / 96.0;
+
+	pDC->Flush();
+
+	const D2D1_SIZE_U szBmp = pBmp->GetPixelSize();
+
+	INT32 l = (INT32)floorf(rc.left * (float)Zoom);
+	INT32 t = (INT32)floorf(rc.top * (float)Zoom);
+	INT32 r = (INT32)ceilf(rc.right * (float)Zoom);
+	INT32 b = (INT32)ceilf(rc.bottom * (float)Zoom);
+
+	if (l < 0) l = 0;
+	if (t < 0) t = 0;
+	if (r > (INT32)szBmp.width)  r = (INT32)szBmp.width;
+	if (b > (INT32)szBmp.height) b = (INT32)szBmp.height;
+	if (r <= l) r = l + 1;
+	if (b <= t) b = t + 1;
+
+	const UINT32 W_phys = (UINT32)(r - l);
+	const UINT32 H_phys = (UINT32)(b - t);
+
+	const float srcLeftDip = l / (float)Zoom;
+	const float srcTopDip = t / (float)Zoom;
+	const float W_dip = W_phys / (float)Zoom;
+	const float H_dip = H_phys / (float)Zoom;
+
+	const float destX = point.x + (srcLeftDip - rc.left);
+	const float destY = point.y + (srcTopDip - rc.top);
+
+	ComPtr<ID2D1Bitmap> pBmpEffect;
+	hr = pDC->CreateBitmap(
+		{ W_phys, H_phys },
+		NULL, 0,
+		D2D1::BitmapProperties(pBmp->GetPixelFormat(), dpiX, dpiY),
+		&pBmpEffect);
+	if (FAILED(hr)) return hr;
+
+	const D2D1_RECT_U rcU{ (UINT32)l, (UINT32)t, (UINT32)r, (UINT32)b };
+	hr = pBmpEffect->CopyFromBitmap(NULL, pBmp.Get(), &rcU);
+	if (FAILED(hr)) return hr;
+
+	ComPtr<ID2D1Effect> pEffect;
+	hr = pDC->CreateEffect(CLSID_D2D1GaussianBlur, &pEffect);
+	if (FAILED(hr)) return hr;
+	pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_HARD);
+	pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, fDeviation);
+
+	ComPtr<ID2D1Effect> saturationEffect;
+	hr = pDC->CreateEffect(CLSID_D2D1Saturation, &saturationEffect);
+	if (FAILED(hr)) return hr;
+	saturationEffect->SetValue(D2D1_SATURATION_PROP_SATURATION, 5.f);
+
+	pEffect->SetInput(0, pBmpEffect.Get());
+	saturationEffect->SetInputEffect(0, pEffect.Get());
+
+	const auto iBlend = pDC->GetPrimitiveBlend();
+	pDC->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
+
+	RoundedRectMaskD2dDC(pDC, pFactory,
+		D2D1::RectF(destX, destY, destX + W_dip, destY + H_dip),
+		(float)borderRadius);
+
+	pDC->DrawImage(saturationEffect.Get(), D2D1::Point2F(destX, destY));
+	pDC->PopLayer();
+	pDC->SetPrimitiveBlend(iBlend);
+
+	return S_OK;
 }
 
 HRESULT ProgressiveBlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
