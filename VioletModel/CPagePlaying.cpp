@@ -17,7 +17,7 @@ void CPagePlaying::UpdateBlurredCover()
 		pWicCover = App->GetImg(GImg::DefaultCover);
 	ComPtr<ID2D1Image> pOldTarget;
 	m_pDC->GetTarget(&pOldTarget);
-	m_pDC->SetTarget(m_pBmpBlurredCover);
+	m_pDC->SetTarget(m_pBmpBlurredCover.Get());
 	m_pDC->SetTransform(D2D1::Matrix3x2F::Identity());
 	m_pDC->BeginDraw();
 	m_pDC->Clear(D2D1::ColorF(D2D1::ColorF::White));// TODO:主题色
@@ -47,15 +47,14 @@ void CPagePlaying::UpdateBlurredCover()
 	ComPtr<IWICBitmap> pWicBmpScaled;
 	eck::ScaleWicBitmap(pWicCover.Get(), pWicBmpScaled.RefOf(), (int)cx, (int)cy,
 		WICBitmapInterpolationModeNearestNeighbor);
-	SafeRelease(m_pBmpCover);
 	m_pDC->CreateBitmapFromWicBitmap(pWicBmpScaled.Get(), &m_pBmpCover);
-	m_Cover.SetBitmap(m_pBmpCover);
-	m_CoverImg.SetBitmap(m_pBmpCover);
+	m_Cover.SetBitmap(m_pBmpCover.Get());
+	m_CoverImg.SetBitmap(m_pBmpCover.Get());
 	//---模糊 
 	ComPtr<ID2D1Effect> pEffect;
 	ComPtr<ID2D1Effect> saturationEffect;
 	m_pDC->CreateEffect(CLSID_D2D1GaussianBlur, &pEffect);
-	pEffect->SetInput(0, m_pBmpCover);
+	pEffect->SetInput(0, m_pBmpCover.Get());
 	pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, 40.f);
 	pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_HARD);
 	pEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION,
@@ -68,7 +67,7 @@ void CPagePlaying::UpdateBlurredCover()
 	m_pDC->DrawImage(saturationEffect.Get(), pt);
 	//---半透明遮罩
 	m_pBrBkg->SetColor(App->GetColor(GPal::PlayPageOverlay));
-	m_pDC->FillRectangle(GetViewRectF(), m_pBrBkg);
+	m_pDC->FillRectangle(GetViewRectF(), m_pBrBkg.Get());
 
 	m_pDC->EndDraw();
 	m_pDC->SetTarget(pOldTarget.Get());
@@ -85,6 +84,8 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 	break;
 	case PlayEvt::Play:
 	{
+		m_VideoPlayer.SetVisible(App->GetPlayer().IsVideo());
+		if (App->GetPlayer().IsVideo()) { m_VideoPlayer.Open(LR"(M:\Movies\流浪地球2.mkv)"); return; }
 		UpdateBlurredCover();
 		InvalidateRect();
 		const auto& mi = App->GetPlayer().GetMusicInfo();
@@ -152,7 +153,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		BeginPaint(ps, wParam, lParam);
 		RoundedRectMaskXYD2dDC(m_pDC, eck::g_pD2DFactory, ps.rcfClip, radiusX, radiusY);
 
-		m_pDC->DrawBitmap(m_pBmpBlurredCover, ps.rcfClipInElem,
+		m_pDC->DrawBitmap(m_pBmpBlurredCover.Get(), ps.rcfClipInElem,
 			1.f, D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR, ps.rcfClipInElem);
 
 		m_pDC->PopLayer();
@@ -164,17 +165,16 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		const auto cxF = GetWidthF();
 		const auto cyF = GetHeightF();
-		if (m_pBmpBlurredCover)
+		if (m_pBmpBlurredCover.Get())
 		{
 			const auto size = m_pBmpBlurredCover->GetSize();
 			if (!(size.width < cxF || size.width / 2.f > cxF ||
 				size.height < cyF || size.height / 2.f > cyF))
 				goto Update;
-			SafeRelease(m_pBmpBlurredCover);
-			GetWnd()->BmpNewLogSize(cxF, cyF, m_pBmpBlurredCover);
+			GetWnd()->BmpNewLogSize(cxF, cyF, m_pBmpBlurredCover.RefOfClear());
 		}
 		else
-			GetWnd()->BmpNewLogSize(cxF, cyF, m_pBmpBlurredCover);
+			GetWnd()->BmpNewLogSize(cxF, cyF, m_pBmpBlurredCover.RefOfClear());
 	Update:;
 		UpdateBlurredCover();
 		const auto cx = GetWidthF();
@@ -214,14 +214,15 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		m_BTBack.SetRect(rcBackBtn);
 
 		m_CoverImg.SetRect(D2D1::RectF(0.f, 0.f, cx, cy));
+
+		m_VideoPlayer.SetRect(D2D1::RectF(0.f, 0.f, cx, cy));
 	}
 	break;
 	case WM_DPICHANGED:
 	{
 		const auto cx = GetWidthF();
 		const auto cy = GetHeightF();
-		SafeRelease(m_pBmpBlurredCover);
-		GetWnd()->BmpNewLogSize(cx, cy, m_pBmpBlurredCover);
+		GetWnd()->BmpNewLogSize(cx, cy, m_pBmpBlurredCover.RefOfClear());
 		UpdateBlurredCover();
 	}
 	break;
@@ -276,13 +277,16 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		m_LAArtist.SetColor(D2D1::ColorF(foregroundColor, 0.5));
 		m_LAArtist.SetTextFormat(pTfSubtitle.Get());
 
+		m_CoverImg.Create(nullptr, Dui::DES_VISIBLE, 0,
+			50, 50, 200, 200, this);
+
+		m_VideoPlayer.Create(nullptr, Dui::DES_VISIBLE, 0,
+			0, 0, 200, 200, this);
+
 		m_BTBack.Create(nullptr, Dui::DES_VISIBLE | Dui::DES_NOTIFY_TO_WND, 0,
 			100, 100, 70, 20, this);
 		m_BTBack.SetID(ELEID_PLAYPAGE_BACK);
 		//m_BTBack.SetTheme(((CWndMain*)GetWnd())->GetVioletTheme());
-
-		m_CoverImg.Create(nullptr, Dui::DES_VISIBLE, 0,
-			50, 50, 200, 200, this);
 
 		OnColorSchemeChanged();
 
@@ -303,9 +307,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_DESTROY:
 	{
-		SafeRelease(m_pBmpBlurredCover);
-		SafeRelease(m_pBmpCover);
-		SafeRelease(m_pBrBkg);
+		
 	}
 	break;
 	}

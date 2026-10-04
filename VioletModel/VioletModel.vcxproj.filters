@@ -180,6 +180,9 @@
     <ClInclude Include="CVeFadeOverlay.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
+    <ClInclude Include="CVeVideoPlayer.h">
+      <Filter>UI\元素</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyEck.cpp">
@@ -312,6 +315,9 @@
       <Filter>UI\元素</Filter>
     </ClCompile>
     <ClCompile Include="CVeFadeOverlay.cpp">
+      <Filter>UI\元素</Filter>
+    </ClCompile>
+    <ClCompile Include="CVeVideoPlayer.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
   </ItemGroup>

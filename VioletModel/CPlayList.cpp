@@ -2,7 +2,7 @@
 #include "CPlayList.h"
 #include "CApp.h"
 #include "CPlayListFile.h"
-
+#include "Utils.h"
 
 void CPlayList::ImFixGroupIndex(int idxFlatBegin, int nDelta)
 {
@@ -53,6 +53,7 @@ int CPlayList::FlInsert(const eck::CRefStrW& rsFile, int idx)
 	idx = FlInsertEmpty(idx);
 	auto& e = FlAt(idx);
 	e.rsFile = rsFile;
+	e.fileType = GuessMediaTypeByExt(std::wstring(rsFile.Data(), rsFile.Size()));
 	e.rsName.Clear();
 	rsFile.PazTrimToFileName(e.rsName);
 	return idx;

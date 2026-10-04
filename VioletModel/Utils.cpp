@@ -6,13 +6,15 @@
 D2D1_LAYER_PARAMETERS layer_param;
 ComPtr<ID2D1RoundedRectangleGeometry> rrect_{};
 
+#include <cwctype>
+
 #include <d3dcompiler.h>
 #include <d3dcommon.h>
 #include <d2d1effectauthor.h> 
 #pragma comment(lib, "d3dcompiler.lib")
 
 // ============================================================
-//  Progressive Blur (iOS style) - 自定义像素着色器
+//  Progressive Blur - 自定义像素着色器
 //  支持四个方向：上->下 / 下->上 / 左->右 / 右->左
 // ============================================================
 
@@ -182,7 +184,7 @@ public:
 	{
 		if (!in || !out || !outOp || count < 1) return E_INVALIDARG;
 		*out = in[0];
-		*outOp = in[0];   // 关键：整个输出都是不透明的
+		*outOp = in[0]; 
 		return S_OK;
 	}
 
@@ -754,4 +756,35 @@ void UpdateHighlightColor() {
 
 		highlightColor = GDIClrToCommonClr(theme_color);
 	}
+}
+
+// 返回：2 = 未知，0 = 音频，1 = 视频
+int GuessMediaTypeByExt(const std::wstring& path)
+{
+	const size_t dot = path.find_last_of(L'.');
+	if (dot == std::wstring::npos || dot + 1 >= path.size())
+		return 0;
+
+	std::wstring ext = path.substr(dot + 1);
+	for (auto& c : ext)
+		c = (wchar_t)std::towlower(c);
+
+	static const wchar_t* kAudio[] = {
+		L"mp1", L"mp2", L"xm",  L"mp3", L"flac", L"wma", L"wav",
+		L"m4a", L"ogg", L"aac", L"ape", L"aiff",
+	};
+	for (auto* e : kAudio)
+		if (ext == e) return 0;
+
+	static const wchar_t* kVideo[] = {
+		L"mp4", L"mkv", L"avi",  L"mov",  L"wmv",  L"flv",  L"webm",
+		L"ts",  L"m2ts",L"mpg",  L"mpeg", L"3gp",  L"rmvb", L"vob",
+		L"ogv", L"mxf", L"divx", L"xvid", L"h264", L"h265", L"hevc",
+		L"av1", L"m4v", L"f4v",  L"ogm",  L"asf",  L"dv",   L"roq",
+		L"yuv",
+	};
+	for (auto* e : kVideo)
+		if (ext == e) return 1;
+
+	return 2;
 }

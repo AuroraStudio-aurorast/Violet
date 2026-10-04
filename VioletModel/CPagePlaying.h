@@ -3,8 +3,8 @@
 #include "CVeLrc.h"
 #include "CVeDuiImage.h"
 #include "CVeDuiButton.h"
+#include "CVeVideoPlayer.h"
 #include "CApp.h"
-
 // CWndMain负责更新该元素的图片
 class CPagePlaying : public Dui::CElem
 {
@@ -19,9 +19,11 @@ private:
 
 	CVeImage m_CoverImg{};
 
-	ID2D1Bitmap1* m_pBmpCover{};
-	ID2D1Bitmap1* m_pBmpBlurredCover{};
-	ID2D1SolidColorBrush* m_pBrBkg{};
+	CVeVideoPlayer m_VideoPlayer{};
+
+	ComPtr<ID2D1Bitmap1> m_pBmpCover{};
+	ComPtr<ID2D1Bitmap1> m_pBmpBlurredCover{};
+	ComPtr<ID2D1SolidColorBrush> m_pBrBkg{};
 
 	ComPtr<IDWriteTextFormat> pTfTitle;
 	ComPtr<IDWriteTextFormat> pTfSubtitle;

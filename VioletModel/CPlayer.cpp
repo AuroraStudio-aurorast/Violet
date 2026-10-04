@@ -35,6 +35,7 @@ PlayErr CPlayer::PlayWorker(CPlayList::ITEM& e)
 {
 	m_bActive = TRUE;
 	m_bPaused = FALSE;
+	m_bVideo = e.fileType;
 	if (!m_Bass.Open(e.rsFile.Data()))
 	{
 		m_dwLastHrOrBassErr = CBass::GetError();

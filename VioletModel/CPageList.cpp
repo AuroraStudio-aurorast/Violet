@@ -149,8 +149,10 @@ HRESULT CPageList::OnMenuAddFile(CPlayList* pList, int idxInsert)
     pfod->SetOptions(FOS_ALLOWMULTISELECT | FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST);
     constexpr COMDLG_FILTERSPEC FilterSpec[]
     {
-        { L"音频文件(*.mp1;*.mp2;*.xm;*.mp3;*.flac;*.wma;*.wav;*.m4a;*.ogg;*.acc;*.ape;*.aiff)",
-            L"*.mp1;*.mp2;*.xm;*.mp3;*.flac;*.wma;*.wav;*.m4a;*.ogg;*.acc;*.ape;*.aiff" },
+        { L"音频文件(*.mp1;*.mp2;*.xm;*.mp3;*.flac;*.wma;*.wav;*.m4a;*.ogg;*.aac;*.ape;*.aiff)",
+            L"*.mp1;*.mp2;*.xm;*.mp3;*.flac;*.wma;*.wav;*.m4a;*.ogg;*.aac;*.ape;*.aiff" },
+        { L"视频文件(*.mp4;*.mkv;*.avi;*.mov;*.wmv;*.flv;*.webm;*.ts;*.m2ts;*.mpg;*.mpeg;*.3gp;*.rmvb;*.vob;*.ogv;*.mxf;*.divx;*.xvid;*.h264;*.h265;*.hevc;*.av1;*.m4v;*.f4v;*.ogm;*.asf;*.wmv;*.dv;*.mxf;*.roq;*.yuv)",
+            L"*.mp4;*.mkv;*.avi;*.mov;*.wmv;*.flv;*.webm;*.ts;*.m2ts;*.mpg;*.mpeg;*.3gp;*.rmvb;*.vob;*.ogv;*.mxf;*.divx;*.xvid;*.h264;*.h265;*.hevc;*.av1;*.m4v;*.f4v;*.ogm;*.asf;*.wmv;*.dv;*.mxf;*.roq;*.yuv" },
         { L"所有文件",L"*.*" }
     };
     pfod->SetFileTypes(ARRAYSIZE(FilterSpec), FilterSpec);

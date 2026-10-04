@@ -22,6 +22,7 @@ private:
     {
         eck::CRefStrW rsName{};		// 名称
         eck::CRefStrW rsFile{};		// 文件路径
+        int fileType{};           // 文件类型
 
         eck::CRefStrW rsTitle{};	// 标题
         eck::CRefStrW rsArtist{};	// 艺术家

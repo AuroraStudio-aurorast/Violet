@@ -73,6 +73,7 @@ private:
 	BITBOOL m_bPaused : 1{};	// 是否暂停
 	BITBOOL m_bDefCover : 1{ TRUE };	// 是否使用默认封面
 
+	BITBOOL m_bVideo : 1{};   // 是否是视频
 
 	PlayErr PlayWorker(CPlayList::ITEM& e);
 
@@ -104,6 +105,7 @@ public:
 	// 秒
 	EckInlineNdCe double GetTotalTime() const noexcept { return m_lfTotalTime; }
 	EckInlineNdCe auto& GetBass() noexcept { return m_Bass; }
+	EckInlineNdCe BOOL IsVideo() const noexcept { return m_bVideo; }
 
 	PlayErr Play(int idx);
 	PlayErr Play(int idxGroup, int idxItem);
