@@ -21,8 +21,8 @@ private:
 
 	CVeVideoPlayer m_VideoPlayer{};
 
-	ComPtr<ID2D1Bitmap1> m_pBmpCover{};
-	ComPtr<ID2D1Bitmap1> m_pBmpBlurredCover{};
+	ID2D1Bitmap1* m_pBmpCover{};
+	ID2D1Bitmap1* m_pBmpBlurredCover{};
 	ComPtr<ID2D1SolidColorBrush> m_pBrBkg{};
 
 	ComPtr<IDWriteTextFormat> pTfTitle;

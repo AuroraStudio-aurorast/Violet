@@ -789,10 +789,10 @@ void CWndMain::RePosButtonProgBar()
 void CWndMain::OnCoverUpdate()
 {
 	const auto pBmp = m_PagePlaying.m_pBmpCover;
-	if (pBmp.Get())
+	if (pBmp)
 	{
 		//m_pCompPlayPageAn->SetOverlayBitmap(pBmp);
-		m_PlayPanel.m_Cover.SetBitmap(pBmp.Get());
+		m_PlayPanel.m_Cover.SetBitmap(pBmp);
 	}
 }
 

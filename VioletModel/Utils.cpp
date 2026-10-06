@@ -486,7 +486,7 @@ HRESULT BlurD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
 	RoundedRectMaskD2dDC(pDC, pFactory,
 		D2D1::RectF(destX, destY, destX + W_dip, destY + H_dip),
 		(float)borderRadius);
-
+	pDC->Clear(D2D1::ColorF(0x000000, 0));
 	pDC->DrawImage(saturationEffect.Get(), D2D1::Point2F(destX, destY));
 	pDC->PopLayer();
 	pDC->SetPrimitiveBlend(iBlend);
@@ -676,7 +676,7 @@ HRESULT OpacityMaskD2dDC(ID2D1DeviceContext* pDC, ID2D1Factory1* pFactory,
 	LyParam.opacityBrush = opacityBrush;
 
 	pDC->PushLayer(&LyParam, NULL);
-
+	pDC->Clear(D2D1::ColorF(0x000000, 0));
 	pDC->DrawImage(
 		pBmpEffect.Get(),
 		D2D1::Point2F(destX, destY),
