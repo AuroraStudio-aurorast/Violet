@@ -49,17 +49,17 @@ extern "C" {
 #include <string>
 #include <chrono>
 
-// ==================== 音频环形缓冲 ====================
-class CVeAudioRing
+class CAudioRing
 {
     std::vector<uint8_t>    m_buf;
     size_t                  m_rp{ 0 }, m_wp{ 0 };
     std::mutex              m_mtx;
     std::condition_variable m_cvWrite;
     std::atomic<bool>       m_abort{ false };
+    std::atomic<uint64_t> m_ullTotalRead{ 0 };
 
 public:
-    explicit CVeAudioRing(size_t n) : m_buf(n) {}
+    explicit CAudioRing(size_t n) : m_buf(n) {}
 
     void Abort()
     {
@@ -76,7 +76,8 @@ public:
         m_cvWrite.notify_all();
     }
 
-    // 音频线程：读数据，非阻塞
+    size_t Capacity() const { return m_buf.size(); }
+
     size_t Read(uint8_t* dst, size_t n)
     {
         std::lock_guard<std::mutex> lk(m_mtx);
@@ -87,15 +88,19 @@ public:
             dst[i] = m_buf[m_rp];
             m_rp = (m_rp + 1) % m_buf.size();
         }
-        if (toRead) m_cvWrite.notify_one();
+        if (toRead)
+        {
+            m_ullTotalRead += toRead;
+            m_cvWrite.notify_one();
+        }
         return toRead;
     }
+    uint64_t TotalRead() const { return m_ullTotalRead.load(); }
 
-    // 解码线程：写数据，最多等待 50ms 后返回（让解码线程有机会响应 seek）
     size_t Write(const uint8_t* src, size_t n)
     {
         std::unique_lock<std::mutex> lk(m_mtx);
-        auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(50);
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(5);
         size_t total = 0;
         while (total < n && !m_abort)
         {
@@ -125,20 +130,17 @@ public:
     }
 };
 
-// ==================== 播放器组件 ====================
 class CVeVideoPlayer : public Dui::CElem
 {
 public:
     enum class State { Idle, Opening, Playing, Paused, Stopped };
 
 private:
-    // ---------- D3D/D2D 设备（组件持有强引用） ----------
     ID3D11Device* m_pD3DDevice{};
     ID3D11DeviceContext* m_pD3DContext{};
     ID2D1DeviceContext* m_pD2DContext{};
     bool                 m_bDeviceAttached{ false };
 
-    // ---------- FFmpeg 视频 ----------
     AVFormatContext* m_pFmtCtx{};
     AVCodecContext* m_pVCodecCtx{};
     AVCodecContext* m_pACodecCtx{};
@@ -150,16 +152,14 @@ private:
     AVRational       m_AudioTimeBase{};
     double           m_dbFps{ 30.0 };
 
-    // ---------- 音频重采样（-> WASAPI 混音格式） ----------
     SwrContext* m_pSwrCtx{};
     int             m_iAudioSampleRate{ 48000 };
     int             m_iAudioChannels{ 2 };
     AVSampleFormat  m_eAudioSampleFmt{ AV_SAMPLE_FMT_FLT };
     int             m_iAudioBlockAlign{};
     int             m_iAudioBytesPerSec{};
-    CVeAudioRing* m_pRing{};
+    CAudioRing* m_pRing{};
 
-    // ---------- WASAPI ----------
     IMMDeviceEnumerator* m_pEnum{};
     IAudioClient* m_pAudioClient{};
     IAudioRenderClient* m_pRenderClient{};
@@ -168,21 +168,21 @@ private:
     UINT32               m_uBufferFrames{};
     std::thread          m_thAudio;
     std::atomic<bool>    m_bAudioRunning{ false };
-    std::atomic<double>  m_dbAudioClock{ 0.0 };
     std::atomic<float>   m_fVolume{ 1.0f };
     std::atomic<bool>    m_bAudioDeviceReady{ false };
 
-    std::atomic<UINT64>  m_ullAudioClockBase{ 0 };
-    std::atomic<double>  m_dbAudioClockBase{ 0.0 };
-    std::atomic<bool>    m_bAudioClockReset{ false };
+    std::atomic<double>  m_dbAudioClock{ 0.0 };    // 当前时钟（秒），从流起点算
+    double               m_dbClockOffset{ 0.0 };   // 暂停/Seek 时冻结的时钟值
+    bool                 m_bClockStarted{ false }; // QPC 基准是否已取
+    bool                 m_bClockCalibrated{ false };   // 首次取到帧时把时钟对齐到其 pts
+    LARGE_INTEGER        m_clockStartQpc{};        // 时钟启动时的 QPC 值
+    LARGE_INTEGER        m_qpcFreq{};              // QPC 频率（构造时取一次）
 
-    // ---------- 解码线程 ----------
     std::thread          m_thDecode;
     std::atomic<bool>    m_bStopRequest{ false };
     std::atomic<bool>    m_bPaused{ false };
     std::atomic<double>  m_dbSeekRequest{ -1.0 };
 
-    // ---------- 视频帧队列 ----------
     struct VideoFrame
     {
         ID3D11Texture2D* pTexture{};
@@ -192,51 +192,39 @@ private:
     std::deque<VideoFrame>  m_queFrames;
     std::mutex              m_mtxVideoQ;
     std::condition_variable m_cvVideoQFull;
-    static constexpr size_t kMaxVideoQueue = 8;
+    static constexpr size_t kMaxVideoQueue = 16;
     VideoFrame              m_lastFrame;
 
-    // ---------- D3D11 视频处理器（NV12 -> BGRA） ----------
     ID3D11VideoDevice* m_pVideoDevice{};
     ID3D11VideoContext* m_pVideoContext{};
     ID3D11VideoProcessorEnumerator* m_pVpEnum{};
     ID3D11VideoProcessor* m_pVideoProcessor{};
     int                             m_cxVideo{}, m_cyVideo{};
 
-    // ---------- BGRA 纹理池 ----------
     std::vector<ID3D11Texture2D*> m_vecBgraPool;
     std::vector<ID2D1Bitmap1*>    m_vecBmpPool;
     std::vector<bool>             m_vecPoolBusy;
     std::mutex                    m_mtxPool;
 
-    // ---------- D3D11 immediate context 互斥 ----------
     std::mutex m_mtxD3D;
 
-    // ---------- 状态 ----------
     State        m_eState{ State::Idle };
     bool         m_bLoop{ false };
     std::wstring m_strUrl;
 
-    // ---------- 内建渲染定时器（用元素自带的 SetTimer） ----------
     UINT_PTR  m_uTimerId{};
     bool      m_bTimerOn{ false };
     UINT      m_uRenderIntervalMs{ 16 };
 
-    // ---------- 无音频设备时的回退时钟 ----------
-    ULONGLONG m_ullFallbackTick{};
-    double    m_dbFallbackAcc{};
-
-    // ---------- 视频流的起始时间（秒）----------
     double m_dbStreamStartTime{ 0.0 };
 
-    // ---------- 纹理池（独立于 Open/Close 生命周期）----------
-    int m_cxPoolVideo{};    // 池当前对应的视频宽
-    int m_cyPoolVideo{};    // 池当前对应的视频高
+    int m_cxPoolVideo{};
+    int m_cyPoolVideo{};
 
-    void EnsureTexturePool(int cx, int cy);   // 尺寸变化时重建
-    void DestroyTexturePool();                // 析构时释放
+    void EnsureTexturePool(int cx, int cy);
+    void DestroyTexturePool();
 
-    // ==================== 内部方法 ====================
-    bool   AttachDeviceFromFramework();     // 从框架全局反查并附加设备
+    bool   AttachDeviceFromFramework();
     void   DetachDevice();
 
     bool   OpenInternal(const std::wstring& url);
@@ -272,12 +260,10 @@ public:
     CVeVideoPlayer();
     ~CVeVideoPlayer();
 
-    // 允许外部注入自定义设备（可选，不调则 WM_CREATE 自动从框架取）
     void AttachDevice(ID3D11Device* pDev,
         ID3D11DeviceContext* pCtx,
         ID2D1DeviceContext* pD2D);
 
-    // 播放控制
     bool  Open(const std::wstring& url);
     void  Play();
     void  Pause();

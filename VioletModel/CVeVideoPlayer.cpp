@@ -20,10 +20,11 @@
 #define VDBG(fmt, ...) ((void)0)
 #endif
 
-// ============================================================
-// 构造 / 析构
-// ============================================================
-CVeVideoPlayer::CVeVideoPlayer() = default;
+CVeVideoPlayer::CVeVideoPlayer()
+{
+    QueryPerformanceFrequency(&m_qpcFreq);
+    QueryPerformanceCounter(&m_clockStartQpc);
+}
 
 CVeVideoPlayer::~CVeVideoPlayer()
 {
@@ -33,9 +34,6 @@ CVeVideoPlayer::~CVeVideoPlayer()
     DetachDevice();
 }
 
-// ============================================================
-// 设备附加
-// ============================================================
 void CVeVideoPlayer::AttachDevice(ID3D11Device* pDev,
     ID3D11DeviceContext* pCtx,
     ID2D1DeviceContext* pD2D)
@@ -81,14 +79,11 @@ bool CVeVideoPlayer::AttachDeviceFromFramework()
 {
     if (m_bDeviceAttached) return true;
 
-    // m_pWnd / m_pDC 是 CElem 的私有成员，必须用公有的 GetWnd() / GetDC()
     auto* pWnd = GetWnd();
     if (!pWnd) return false;
     auto* pDC = GetDC();
     if (!pDC) return false;
 
-    // g_pDxgiDevice 在 eck 命名空间（和 eck::g_pD2DFactory 同级），
-    // 不在 eck::Dui 里。如果你项目里发现它在别处，换成对应的前缀即可。
     auto* pDxgi = eck::g_pDxgiDevice;
     if (!pDxgi) return false;
 
@@ -106,19 +101,13 @@ bool CVeVideoPlayer::AttachDeviceFromFramework()
     return true;
 }
 
-// ============================================================
-// 确保纹理池与视频尺寸匹配
-// 尺寸没变就复用，避免重复创建导致 D2D 内部缓存位图累积泄漏
-// ============================================================
 void CVeVideoPlayer::EnsureTexturePool(int cx, int cy)
 {
     if (cx <= 0 || cy <= 0) return;
 
-    // 尺寸相同且池已经存在：复用
     if (m_cxPoolVideo == cx && m_cyPoolVideo == cy && !m_vecBmpPool.empty())
         return;
 
-    // 尺寸变化：先销毁旧的
     DestroyTexturePool();
 
     m_cxPoolVideo = cx;
@@ -156,12 +145,8 @@ void CVeVideoPlayer::EnsureTexturePool(int cx, int cy)
     }
 }
 
-// ============================================================
-// 销毁纹理池
-// ============================================================
 void CVeVideoPlayer::DestroyTexturePool()
 {
-    // 1) 清空队列和当前帧，它们持有池中纹理/位图的裸指针
     ClearVideoQueue();
     if (m_lastFrame.pTexture)
     {
@@ -169,17 +154,11 @@ void CVeVideoPlayer::DestroyTexturePool()
         m_lastFrame = {};
     }
 
-    // 2) 解除 D2D 上下文对这些位图的引用
-    //    D2D 会缓存最近使用的 source bitmap，SetTarget(nullptr) 触发它
-    //    刷新缓存引用；如果当前 target 恰好是池中的 bitmap（不应该发生，
-    //    但保险起见也清一下）。
     if (m_pD2DContext)
     {
         m_pD2DContext->SetTarget(nullptr);
     }
 
-    // 3) 先释放位图，再释放纹理（位图隐式引用纹理，顺序反了会让纹理
-    //    多活一轮，但更严重的是 D2D 内部缓存的位图引用不清会累积）
     for (auto* b : m_vecBmpPool) if (b) b->Release();
     m_vecBmpPool.clear();
 
@@ -191,12 +170,8 @@ void CVeVideoPlayer::DestroyTexturePool()
     m_cyPoolVideo = 0;
 }
 
-// ============================================================
-// 打开 / 关闭
-// ============================================================
 bool CVeVideoPlayer::Open(const std::wstring& url)
 {
-    // 首次打开：确保设备已附加
     if (!m_bDeviceAttached)
     {
         if (!AttachDeviceFromFramework())
@@ -219,12 +194,11 @@ bool CVeVideoPlayer::Open(const std::wstring& url)
     m_bPaused = false;
     m_eState = State::Playing;
 
-    m_dbAudioClockBase = 0.0;
-    m_ullAudioClockBase = 0;
     m_dbAudioClock = 0.0;
-    m_dbStreamStartTime = 0.0;
-    m_dbFallbackAcc = 0.0;
-    m_ullFallbackTick = GetTickCount64();
+    m_dbClockOffset = 0.0;
+    m_bClockStarted = false;
+    m_bClockCalibrated = false;
+    QueryPerformanceCounter(&m_clockStartQpc);
 
     // 按视频帧率调整定时器间隔
     /*
@@ -235,18 +209,14 @@ bool CVeVideoPlayer::Open(const std::wstring& url)
     */
     m_uRenderIntervalMs = 16;
 
-    // 启动音频线程
     if (m_bAudioDeviceReady)
     {
         m_bAudioRunning = true;
-        m_bAudioClockReset = true;
         m_thAudio = std::thread(&CVeVideoPlayer::AudioThreadProc, this);
     }
 
-    // 启动解码线程
     m_thDecode = std::thread(&CVeVideoPlayer::DecodeThreadProc, this);
 
-    // 启动渲染定时器
     StartRenderTimer();
     return true;
 }
@@ -290,9 +260,6 @@ void CVeVideoPlayer::CloseInternal()
 
 }
 
-// ============================================================
-// 打开文件 + 初始化所有子系统
-// ============================================================
 bool CVeVideoPlayer::OpenInternal(const std::wstring& url)
 {
     int n = WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -377,9 +344,6 @@ bool CVeVideoPlayer::OpenInternal(const std::wstring& url)
     return true;
 }
 
-// ============================================================
-// D3D11VA 硬解初始化
-// ============================================================
 bool CVeVideoPlayer::InitHwDecoder()
 {
     if (!m_pD3DDevice || !m_pD3DContext) return false;
@@ -403,9 +367,6 @@ bool CVeVideoPlayer::InitHwDecoder()
     return true;
 }
 
-// ============================================================
-// D3D11 视频处理器
-// ============================================================
 bool CVeVideoPlayer::InitVideoProcessor(int cx, int cy)
 {
     if (!m_pVideoDevice) return false;
@@ -423,9 +384,6 @@ bool CVeVideoPlayer::InitVideoProcessor(int cx, int cy)
     return true;
 }
 
-// ============================================================
-// WASAPI 音频输出
-// ============================================================
 bool CVeVideoPlayer::InitAudioOutput()
 {
     //HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -456,7 +414,7 @@ bool CVeVideoPlayer::InitAudioOutput()
     hr = m_pAudioClient->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         0,
-        10000000,
+        100000,
         0,
         pMix, nullptr);
     CoTaskMemFree(pMix);
@@ -471,7 +429,7 @@ bool CVeVideoPlayer::InitAudioOutput()
     hr = m_pAudioClient->GetService(IID_PPV_ARGS(&m_pVolume));
     if (FAILED(hr)) return false;
 
-    m_pRing = new CVeAudioRing(m_iAudioBytesPerSec);
+    m_pRing = new CAudioRing(m_iAudioBytesPerSec);
     return true;
 }
 
@@ -500,18 +458,68 @@ bool CVeVideoPlayer::InitAudioResampler()
     return true;
 }
 
-// ============================================================
-// 纹理池
-// ============================================================
 ID3D11Texture2D* CVeVideoPlayer::AcquirePoolTexture(int& idx)
 {
     std::lock_guard<std::mutex> lk(m_mtxPool);
-    for (size_t i = 0; i < m_vecPoolBusy.size(); ++i)
-        if (!m_vecPoolBusy[i]) { m_vecPoolBusy[i] = true; idx = (int)i; return m_vecBgraPool[i]; }
 
-    idx = 0;
-    m_vecPoolBusy[0] = true;
-    return m_vecBgraPool[0];
+    for (size_t i = 0; i < m_vecPoolBusy.size(); ++i)
+    {
+        if (!m_vecPoolBusy[i])
+        {
+            m_vecPoolBusy[i] = true;
+            idx = (int)i;
+            return m_vecBgraPool[i];
+        }
+    }
+
+    if (m_vecBgraPool.size() >= 64)
+    {
+        idx = -1;
+        VDBG(L"[Video] Pool hard limit 64 reached, queue=%zu\n",
+            m_queFrames.size());
+        return nullptr;
+    }
+
+    D3D11_TEXTURE2D_DESC td{};
+    td.Width = m_cxPoolVideo;
+    td.Height = m_cyPoolVideo;
+    td.MipLevels = 1;
+    td.ArraySize = 1;
+    td.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    td.SampleDesc = { 1, 0 };
+    td.Usage = D3D11_USAGE_DEFAULT;
+    td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+    ID3D11Texture2D* pTex = nullptr;
+    if (FAILED(m_pD3DDevice->CreateTexture2D(&td, nullptr, &pTex)))
+    {
+        idx = -1;
+        return nullptr;
+    }
+
+    eck::ComPtr<IDXGISurface> pSurf;
+    pTex->QueryInterface(IID_PPV_ARGS(&pSurf));
+
+    D2D1_BITMAP_PROPERTIES1 bp = D2D1::BitmapProperties1(
+        D2D1_BITMAP_OPTIONS_NONE,
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE));
+
+    ID2D1Bitmap1* pBmp = nullptr;
+    if (FAILED(m_pD2DContext->CreateBitmapFromDxgiSurface(pSurf.Get(), &bp, &pBmp)))
+    {
+        pTex->Release();
+        idx = -1;
+        return nullptr;
+    }
+
+    idx = (int)m_vecBgraPool.size();
+    m_vecBgraPool.push_back(pTex);
+    m_vecBmpPool.push_back(pBmp);
+    m_vecPoolBusy.push_back(true);
+
+    VDBG(L"[Video] Pool grew to %zu (queue=%zu)\n",
+        m_vecBgraPool.size(), m_queFrames.size());
+    return pTex;
 }
 
 void CVeVideoPlayer::ReleasePoolTextureByPtr(ID3D11Texture2D* pTex)
@@ -522,9 +530,6 @@ void CVeVideoPlayer::ReleasePoolTextureByPtr(ID3D11Texture2D* pTex)
         if (m_vecBgraPool[i] == pTex) { m_vecPoolBusy[i] = false; return; }
 }
 
-// ============================================================
-// NV12 -> BGRA
-// ============================================================
 bool CVeVideoPlayer::ConvertToBgra(AVFrame* pFrame, ID3D11Texture2D** ppOut)
 {
     auto* pSrcTex = (ID3D11Texture2D*)pFrame->data[0];
@@ -587,9 +592,6 @@ bool CVeVideoPlayer::ConvertToBgra(AVFrame* pFrame, ID3D11Texture2D** ppOut)
     return true;
 }
 
-// ============================================================
-// 解码一帧音频
-// ============================================================
 int CVeVideoPlayer::DecodeAudioFrame(AVFrame* pFrame)
 {
     if (!m_pSwrCtx || !m_pRing) return 0;
@@ -611,18 +613,15 @@ int CVeVideoPlayer::DecodeAudioFrame(AVFrame* pFrame)
     return (int)m_pRing->Write(outBuf.data(), bytes);
 }
 
-// ============================================================
-// 视频帧队列
-// ============================================================
 void CVeVideoPlayer::PushVideoFrame(VideoFrame&& f)
 {
-    std::unique_lock<std::mutex> lk(m_mtxVideoQ);
-    // 队列满就等，让时钟追上；停止时直接丢
-    while (m_queFrames.size() >= kMaxVideoQueue && !m_bStopRequest)
+    std::lock_guard<std::mutex> lk(m_mtxVideoQ);
+    while (m_queFrames.size() >= kMaxVideoQueue)
     {
-        m_cvVideoQFull.wait_for(lk, std::chrono::milliseconds(20));
+        auto& old = m_queFrames.front();
+        ReleasePoolTextureByPtr(old.pTexture);
+        m_queFrames.pop_front();
     }
-    if (m_bStopRequest) return;
     m_queFrames.push_back(std::move(f));
 }
 
@@ -653,9 +652,6 @@ void CVeVideoPlayer::ClearVideoQueue()
     m_cvVideoQFull.notify_all();
 }
 
-// ============================================================
-// 解码线程
-// ============================================================
 void CVeVideoPlayer::DecodeThreadProc()
 {
     AVPacket* pkt = av_packet_alloc();
@@ -663,6 +659,7 @@ void CVeVideoPlayer::DecodeThreadProc()
 
     while (!m_bStopRequest)
     {
+        // ---------- seek ----------
         double dbSeek = m_dbSeekRequest.exchange(-1.0);
         if (dbSeek >= 0.0)
         {
@@ -682,14 +679,21 @@ void CVeVideoPlayer::DecodeThreadProc()
             if (m_pSwrCtx) { swr_close(m_pSwrCtx); swr_init(m_pSwrCtx); }
             ClearVideoQueue();
 
-            m_dbAudioClockBase = dbSeek;
-            m_bAudioClockReset = true;
             m_dbAudioClock = dbSeek;
+            m_dbClockOffset = dbSeek;
+            m_bClockStarted = false;
         }
 
         if (m_bPaused)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        if (m_pRing && m_bAudioDeviceReady &&
+            m_pRing->Used() > m_pRing->Capacity() * 3 / 4)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
             continue;
         }
 
@@ -703,48 +707,28 @@ void CVeVideoPlayer::DecodeThreadProc()
                 continue;
             }
 
-            bool bEmpty = false;
+            bool bVideoEmpty;
             {
                 std::lock_guard<std::mutex> lk(m_mtxVideoQ);
-                bEmpty = m_queFrames.empty();
+                bVideoEmpty = m_queFrames.empty();
             }
-            if (bEmpty) break;
-            std::this_thread::sleep_for(std::chrono::milliseconds(30));
-            continue;
+            bool bAudioEmpty = (!m_pRing || m_pRing->Used() == 0);
+
+            if (!bVideoEmpty || !bAudioEmpty)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                continue;
+            }
+            break;
         }
 
         if (pkt->stream_index == m_iVideoStream)
         {
             if (avcodec_send_packet(m_pVCodecCtx, pkt) == 0)
             {
-                while (!m_bStopRequest && avcodec_receive_frame(m_pVCodecCtx, frm) == 0)
+                while (!m_bStopRequest &&
+                    avcodec_receive_frame(m_pVCodecCtx, frm) == 0)
                 {
-                    if (frm->format == AV_PIX_FMT_D3D11)
-                    {
-                        ID3D11Texture2D* pBgra = nullptr;
-                        bool ok = ConvertToBgra(frm, &pBgra);
-
-                        static int _cnt = 0;
-                        if (++_cnt % 30 == 1)   // 每 30 帧打一次，避免刷屏
-                        {
-                            VDBG(L"[Video] recv: fmt=%d pts=%lld tb=%d/%d ok=%d bgra=%p\n",
-                                frm->format,
-                                (long long)frm->pts,
-                                m_VideoTimeBase.num, m_VideoTimeBase.den,
-                                (int)ok, pBgra);
-                        }
-
-                        if (ok)
-                        {
-                            VideoFrame vf;
-                            vf.pTexture = pBgra;
-                            for (size_t i = 0; i < m_vecBgraPool.size(); ++i)
-                                if (m_vecBgraPool[i] == pBgra) { vf.pBitmap = m_vecBmpPool[i]; break; }
-                            vf.dbPts = frm->pts * av_q2d(m_VideoTimeBase);
-                            PushVideoFrame(std::move(vf));
-                        }
-                        av_frame_unref(frm);
-                    }
                     if (frm->format == AV_PIX_FMT_D3D11)
                     {
                         ID3D11Texture2D* pBgra = nullptr;
@@ -753,8 +737,16 @@ void CVeVideoPlayer::DecodeThreadProc()
                             VideoFrame vf;
                             vf.pTexture = pBgra;
                             for (size_t i = 0; i < m_vecBgraPool.size(); ++i)
-                                if (m_vecBgraPool[i] == pBgra) { vf.pBitmap = m_vecBmpPool[i]; break; }
-                            vf.dbPts = frm->pts * av_q2d(m_VideoTimeBase);
+                                if (m_vecBgraPool[i] == pBgra)
+                                {
+                                    vf.pBitmap = m_vecBmpPool[i];
+                                    break;
+                                }
+                            int64_t ts = frm->best_effort_timestamp;
+                            if (ts == AV_NOPTS_VALUE) ts = frm->pts;
+                            if (ts == AV_NOPTS_VALUE) ts = pkt->pts;
+                            vf.dbPts = ts * av_q2d(m_VideoTimeBase)
+                                - m_dbStreamStartTime;
                             PushVideoFrame(std::move(vf));
                         }
                     }
@@ -762,17 +754,20 @@ void CVeVideoPlayer::DecodeThreadProc()
                 }
             }
         }
-        else if (pkt->stream_index == m_iAudioStream && m_pACodecCtx && m_bAudioDeviceReady)
+        else if (pkt->stream_index == m_iAudioStream &&
+            m_pACodecCtx && m_bAudioDeviceReady)
         {
             if (avcodec_send_packet(m_pACodecCtx, pkt) == 0)
             {
-                while (!m_bStopRequest && avcodec_receive_frame(m_pACodecCtx, frm) == 0)
+                while (!m_bStopRequest &&
+                    avcodec_receive_frame(m_pACodecCtx, frm) == 0)
                 {
                     DecodeAudioFrame(frm);
                     av_frame_unref(frm);
                 }
             }
         }
+
         av_packet_unref(pkt);
     }
 
@@ -780,84 +775,50 @@ void CVeVideoPlayer::DecodeThreadProc()
     av_packet_free(&pkt);
 }
 
-// ============================================================
-// WASAPI 音频线程
-// ============================================================
 void CVeVideoPlayer::AudioThreadProc()
 {
     if (!m_pAudioClient) return;
-
     m_pAudioClient->Start();
 
     const UINT32 blockAlign = m_iAudioBlockAlign;
 
     while (m_bAudioRunning && !m_bStopRequest)
     {
-        if (m_bAudioClockReset.exchange(false))
-        {
-            UINT64 pos = 0, qpc = 0;
-            if (m_pAudioClock && SUCCEEDED(m_pAudioClock->GetPosition(&pos, &qpc)))
-                m_ullAudioClockBase = pos;
-            else
-                m_ullAudioClockBase = 0;
-        }
-
         UINT32 padding = 0;
         if (FAILED(m_pAudioClient->GetCurrentPadding(&padding))) break;
 
         UINT32 avail = m_uBufferFrames - padding;
         if (avail == 0)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             continue;
         }
 
         BYTE* pData = nullptr;
         if (FAILED(m_pRenderClient->GetBuffer(avail, &pData)))
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             continue;
         }
 
         size_t want = (size_t)avail * blockAlign;
         size_t got = m_pRing ? m_pRing->Read(pData, want) : 0;
-        if (got < want)
-            memset(pData + got, 0, want - got);
+        if (got < want) memset(pData + got, 0, want - got);
 
         m_pRenderClient->ReleaseBuffer(avail, 0);
-
-        if (m_pAudioClock)
-        {
-            UINT64 pos = 0, qpc = 0;
-            if (SUCCEEDED(m_pAudioClock->GetPosition(&pos, &qpc)))
-            {
-                UINT64 base = m_ullAudioClockBase.load();
-                double baseSec = m_dbAudioClockBase.load();
-                if (pos >= base)
-                    m_dbAudioClock = baseSec + (double)(pos - base) / m_iAudioSampleRate;
-            }
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 
     m_pAudioClient->Stop();
 }
 
-// ============================================================
-// 内建渲染定时器（用元素自带的 SetTimer / KillTimer）
-// ============================================================
 void CVeVideoPlayer::StartRenderTimer()
 {
     if (m_bTimerOn) return;
 
-    m_uTimerId = reinterpret_cast<UINT_PTR>(this);   // 用 this 当唯一 ID
+    m_uTimerId = reinterpret_cast<UINT_PTR>(this);
     if (SetTimer(m_uTimerId, m_uRenderIntervalMs))
-    {
         m_bTimerOn = true;
-        m_ullFallbackTick = GetTickCount64();
-        m_dbFallbackAcc = m_dbAudioClock.load();
-    }
 }
 
 void CVeVideoPlayer::StopRenderTimer()
@@ -884,13 +845,11 @@ D2D1_RECT_F CVeVideoPlayer::GetAspectFitRect() const
     float wNew, hNew;
     if (elemAspect > videoAspect)
     {
-        // 元素比视频"更宽"，以高度为基准
         hNew = h;
         wNew = h * videoAspect;
     }
     else
     {
-        // 元素比视频"更高"，以宽度为基准
         wNew = w;
         hNew = w / videoAspect;
     }
@@ -900,16 +859,12 @@ D2D1_RECT_F CVeVideoPlayer::GetAspectFitRect() const
     return { x, y, x + wNew, y + hNew };
 }
 
-// ============================================================
-// 播放控制
-// ============================================================
 void CVeVideoPlayer::Play()
 {
     if (m_eState == State::Paused)
     {
         m_bPaused = false;
-        m_ullFallbackTick = GetTickCount64();
-        m_bAudioClockReset = true;
+        m_bClockStarted = false;
         if (m_pAudioClient) m_pAudioClient->Start();
         m_eState = State::Playing;
     }
@@ -921,12 +876,21 @@ void CVeVideoPlayer::Play()
 
 void CVeVideoPlayer::Pause()
 {
-    if (m_eState == State::Playing)
+    if (m_eState != State::Playing) return;
+    m_bPaused = true;
+
+    if (m_bClockStarted)
     {
-        m_bPaused = true;
-        if (m_pAudioClient) m_pAudioClient->Stop();
-        m_eState = State::Paused;
+        LARGE_INTEGER now;
+        QueryPerformanceCounter(&now);
+        double elapsed = (double)(now.QuadPart - m_clockStartQpc.QuadPart)
+            / (double)m_qpcFreq.QuadPart;
+        m_dbClockOffset += elapsed;
+        m_bClockStarted = false;
     }
+
+    if (m_pAudioClient) m_pAudioClient->Stop();
+    m_eState = State::Paused;
 }
 
 void CVeVideoPlayer::Stop()
@@ -949,12 +913,16 @@ void CVeVideoPlayer::Stop()
     }
     if (m_pRing) m_pRing->Reset();
     m_dbAudioClock = 0.0;
+    m_bClockCalibrated = false;
     if (m_eState != State::Idle) m_eState = State::Stopped;
 }
 
 void CVeVideoPlayer::Seek(double dbSeconds)
 {
     m_dbSeekRequest = dbSeconds;
+    m_dbClockOffset = dbSeconds;
+    m_dbAudioClock = dbSeconds;
+    m_bClockStarted = false;
 }
 
 void CVeVideoPlayer::SetVolume(float v)
@@ -965,20 +933,16 @@ void CVeVideoPlayer::SetVolume(float v)
     if (m_pVolume) m_pVolume->SetMasterVolume(v, nullptr);
 }
 
-// ============================================================
-// 事件与渲染
-// ============================================================
 LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
     case WM_CREATE:
-        // 自动从框架反查设备
         AttachDeviceFromFramework();
         return 0;
 
     case WM_TIMER:
-        if (wParam == reinterpret_cast<UINT_PTR>(this) && m_eState == State::Playing)
+        if (wParam == reinterpret_cast<UINT_PTR>(this))
             InvalidateRect();
         return 0;
 
@@ -986,8 +950,6 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         Dui::ELEMPAINTSTRU ps;
         BeginPaint(ps, wParam, lParam);
-
-        // 填自己的矩形（不要用 Clear）
         {
             ID2D1SolidColorBrush* pBlack = nullptr;
             m_pDC->CreateSolidColorBrush(D2D1::ColorF(0.f, 0.f, 0.f, 1.f), &pBlack);
@@ -997,28 +959,41 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 pBlack->Release();
             }
         }
-
-        // 系统时钟推进（从 Open 时刻算起）
-        if (m_eState == State::Playing && !m_bPaused)
+        if (m_eState == State::Playing && !m_bPaused && m_bClockCalibrated)
         {
-            ULONGLONG now = GetTickCount64();
-            m_dbFallbackAcc += (now - m_ullFallbackTick) / 1000.0;
-            m_ullFallbackTick = now;
-            m_dbAudioClock = m_dbFallbackAcc;
+            if (!m_bClockStarted)
+            {
+                QueryPerformanceCounter(&m_clockStartQpc);
+                m_bClockStarted = true;
+            }
+            LARGE_INTEGER now;
+            QueryPerformanceCounter(&now);
+            double elapsed = (double)(now.QuadPart - m_clockStartQpc.QuadPart)
+                / (double)m_qpcFreq.QuadPart;
+            m_dbAudioClock = m_dbClockOffset + elapsed;
         }
 
-        double dbNow = m_dbAudioClock.load();
+        const double dbNow = m_dbAudioClock.load();
 
-        // ---- 取帧 ----
         if (m_eState == State::Playing && !m_bPaused)
         {
             VideoFrame f;
 
-            // 丢掉过期帧
-            while (GetFrontFrame(f))
+            if (!m_bClockCalibrated)
             {
-                const double vRel = f.dbPts - m_dbStreamStartTime;
-                if (vRel < dbNow - 0.100)
+                if (GetFrontFrame(f))
+                {
+                    m_dbClockOffset = f.dbPts;
+                    m_dbAudioClock = f.dbPts;
+                    m_bClockStarted = false;
+                    m_bClockCalibrated = true;
+                    VDBG(L"[Video] Calibrated to first pts=%.3f\n", f.dbPts);
+                }
+            }
+
+            while (m_queFrames.size() > 1 && GetFrontFrame(f))
+            {
+                if (f.dbPts < dbNow - 0.100)
                 {
                     PopFrontFrame();
                     ReleasePoolTextureByPtr(f.pTexture);
@@ -1026,13 +1001,12 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 break;
             }
-            // 采用已到达的帧
+
             if (GetFrontFrame(f))
             {
-                const double vRel = f.dbPts - m_dbStreamStartTime;
-                if (vRel <= dbNow + 0.020)
+                if (f.dbPts <= dbNow + 0.040)
                 {
-                    if (m_lastFrame.pTexture)
+                    if (m_lastFrame.pTexture && m_lastFrame.pTexture != f.pTexture)
                         ReleasePoolTextureByPtr(m_lastFrame.pTexture);
                     m_lastFrame = f;
                     PopFrontFrame();
@@ -1040,7 +1014,6 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // ---- 画帧 ----
         if (m_lastFrame.pBitmap)
         {
             D2D1_RECT_F rc = GetAspectFitRect();
@@ -1049,9 +1022,9 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         static int _pc = 0;
-        if (++_pc % 10 == 1)
-            VDBG(L"[Video] PAINT: clock=%.3f, start=%.3f, que=%zu, last=%p\n",
-                dbNow, m_dbStreamStartTime, m_queFrames.size(), m_lastFrame.pBitmap);
+        if (++_pc % 30 == 1)
+            VDBG(L"[Video] PAINT: clock=%.3f que=%zu last=%p\n",
+                dbNow, m_queFrames.size(), m_lastFrame.pBitmap);
 
         EndPaint(ps);
         return 0;
@@ -1064,8 +1037,6 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         Stop();
         CloseInternal();
-        // 注意：不在这里 DetachDevice，析构里才做，
-        // 因为 WM_DESTROY 时窗口的资源还没全释放，安全些。
         return 0;
     }
     return CElem::OnEvent(uMsg, wParam, lParam);
