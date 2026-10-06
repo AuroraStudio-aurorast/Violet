@@ -36,25 +36,30 @@ PlayErr CPlayer::PlayWorker(CPlayList::ITEM& e)
 	m_bActive = TRUE;
 	m_bPaused = FALSE;
 	m_bVideo = e.fileType;
-	if (!m_Bass.Open(e.rsFile.Data()))
-	{
-		m_dwLastHrOrBassErr = CBass::GetError();
-		m_bActive = FALSE;
-		return PlayErr::ErrBass;
-	}
-	m_Bass.TempoCreate();
-	m_Bass.Play(TRUE);
-	m_Bass.SetVolume(m_Volume);
-	m_lfCurrTime = 0;
-	m_lfTotalTime = m_Bass.GetLength();
-	m_Bass.SetSync(BASS_SYNC_END | BASS_SYNC_ONETIME, 0,
-		[](DWORD, DWORD, DWORD, PVOID pUser)
+	m_rsFile = e.rsFile.Data();
+
+	if (!m_bVideo) {
+		if (!m_Bass.Open(e.rsFile.Data()))
 		{
-			((eck::THREADCTX*)pUser)->Callback.EnQueueCallback([]
-				{
-					App->GetPlayer().m_Sig.Emit({ PlayEvt::End });
-				});
-		}, eck::GetThreadCtx());
+			m_dwLastHrOrBassErr = CBass::GetError();
+			m_bActive = FALSE;
+			return PlayErr::ErrBass;
+		}
+		m_Bass.TempoCreate();
+		m_Bass.Play(TRUE);
+		m_Bass.SetVolume(m_Volume);
+		m_lfCurrTime = 0;
+		m_lfTotalTime = m_Bass.GetLength();
+		m_Bass.SetSync(BASS_SYNC_END | BASS_SYNC_ONETIME, 0,
+			[](DWORD, DWORD, DWORD, PVOID pUser)
+			{
+				((eck::THREADCTX*)pUser)->Callback.EnQueueCallback([]
+					{
+						App->GetPlayer().m_Sig.Emit({ PlayEvt::End });
+					});
+			}, eck::GetThreadCtx());
+	}
+
 	m_MusicInfo.uMask = Tag::MIM_ALL;
 	Tag::SIMPLE_OPT Opt{};
 	Opt.svArtistDiv = {};

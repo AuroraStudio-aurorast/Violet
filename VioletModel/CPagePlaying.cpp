@@ -86,7 +86,11 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 	case PlayEvt::Play:
 	{
 		m_VideoPlayer.SetVisible(App->GetPlayer().IsVideo());
-		if (App->GetPlayer().IsVideo()) { m_VideoPlayer.Open(LR"(M:\Movies\流浪地球2.mkv)"); return; }
+		if (App->GetPlayer().IsVideo()) { 
+			std::wstring fileAddr = App->GetPlayer().GetFile();
+			m_VideoPlayer.Open(fileAddr);
+			return; 
+		}
 		UpdateBlurredCover();
 		InvalidateRect();
 		const auto& mi = App->GetPlayer().GetMusicInfo();

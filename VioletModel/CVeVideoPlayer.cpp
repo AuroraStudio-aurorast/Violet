@@ -72,9 +72,6 @@ void CVeVideoPlayer::DetachDevice()
     m_bDeviceAttached = false;
 }
 
-// ============================================================
-// 从框架全局设备反查 D3D11，自动附加
-// ============================================================
 bool CVeVideoPlayer::AttachDeviceFromFramework()
 {
     if (m_bDeviceAttached) return true;
@@ -157,6 +154,8 @@ void CVeVideoPlayer::DestroyTexturePool()
     if (m_pD2DContext)
     {
         m_pD2DContext->SetTarget(nullptr);
+        m_pD2DContext->BeginDraw();
+        m_pD2DContext->EndDraw();
     }
 
     for (auto* b : m_vecBmpPool) if (b) b->Release();
@@ -200,13 +199,6 @@ bool CVeVideoPlayer::Open(const std::wstring& url)
     m_bClockCalibrated = false;
     QueryPerformanceCounter(&m_clockStartQpc);
 
-    // 按视频帧率调整定时器间隔
-    /*
-    if (m_dbFps > 1.0 && m_dbFps < 240.0)
-        m_uRenderIntervalMs = (UINT)(std::max)(5.0, 1000.0 / m_dbFps);
-    else
-        m_uRenderIntervalMs = 16;
-    */
     m_uRenderIntervalMs = 16;
 
     if (m_bAudioDeviceReady)
@@ -257,7 +249,6 @@ void CVeVideoPlayer::CloseInternal()
 
     if (m_pVideoProcessor) { m_pVideoProcessor->Release(); m_pVideoProcessor = nullptr; }
     if (m_pVpEnum) { m_pVpEnum->Release();         m_pVpEnum = nullptr; }
-
 }
 
 bool CVeVideoPlayer::OpenInternal(const std::wstring& url)
@@ -386,9 +377,6 @@ bool CVeVideoPlayer::InitVideoProcessor(int cx, int cy)
 
 bool CVeVideoPlayer::InitAudioOutput()
 {
-    //HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-    //if (FAILED(hrCo) && hrCo != RPC_E_CHANGED_MODE) return false;
-
     HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
         CLSCTX_ALL, IID_PPV_ARGS(&m_pEnum));
     if (FAILED(hr)) return false;
@@ -429,7 +417,7 @@ bool CVeVideoPlayer::InitAudioOutput()
     hr = m_pAudioClient->GetService(IID_PPV_ARGS(&m_pVolume));
     if (FAILED(hr)) return false;
 
-    m_pRing = new CAudioRing(m_iAudioBytesPerSec);
+    m_pRing = new CAudioRing(m_iAudioBytesPerSec * 3);
     return true;
 }
 
@@ -659,6 +647,21 @@ void CVeVideoPlayer::DecodeThreadProc()
 
     while (!m_bStopRequest)
     {
+        // 主时钟推进：与 UI 是否渲染无关，切走也能正常走
+        if (m_eState == State::Playing && !m_bPaused && m_bClockCalibrated)
+        {
+            if (!m_bClockStarted)
+            {
+                QueryPerformanceCounter(&m_clockStartQpc);
+                m_bClockStarted = true;
+            }
+            LARGE_INTEGER now;
+            QueryPerformanceCounter(&now);
+            double elapsed = (double)(now.QuadPart - m_clockStartQpc.QuadPart)
+                / (double)m_qpcFreq.QuadPart;
+            m_dbAudioClock = m_dbClockOffset.load() + elapsed;
+        }
+
         // ---------- seek ----------
         double dbSeek = m_dbSeekRequest.exchange(-1.0);
         if (dbSeek >= 0.0)
@@ -682,6 +685,7 @@ void CVeVideoPlayer::DecodeThreadProc()
             m_dbAudioClock = dbSeek;
             m_dbClockOffset = dbSeek;
             m_bClockStarted = false;
+            m_bClockCalibrated = true;
         }
 
         if (m_bPaused)
@@ -690,8 +694,22 @@ void CVeVideoPlayer::DecodeThreadProc()
             continue;
         }
 
+        // 视频领先时间节流
+        double videoLead = 0.0;
+        {
+            std::lock_guard<std::mutex> lk(m_mtxVideoQ);
+            if (!m_queFrames.empty())
+                videoLead = m_queFrames.back().dbPts - m_dbAudioClock.load();
+        }
+        if (videoLead > 0.30)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            continue;
+        }
+
+        // 音频环安全网
         if (m_pRing && m_bAudioDeviceReady &&
-            m_pRing->Used() > m_pRing->Capacity() * 3 / 4)
+            m_pRing->Used() > m_pRing->Capacity() * 7 / 8)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(3));
             continue;
@@ -747,6 +765,18 @@ void CVeVideoPlayer::DecodeThreadProc()
                             if (ts == AV_NOPTS_VALUE) ts = pkt->pts;
                             vf.dbPts = ts * av_q2d(m_VideoTimeBase)
                                 - m_dbStreamStartTime;
+
+                            // 首次校准：第一帧入队时把时钟对齐到它的 pts
+                            if (!m_bClockCalibrated)
+                            {
+                                m_dbClockOffset = vf.dbPts;
+                                m_dbAudioClock = vf.dbPts;
+                                m_bClockStarted = false;
+                                m_bClockCalibrated = true;
+                                VDBG(L"[Video] Calibrated to first pts=%.3f\n",
+                                    vf.dbPts);
+                            }
+
                             PushVideoFrame(std::move(vf));
                         }
                     }
@@ -885,7 +915,7 @@ void CVeVideoPlayer::Pause()
         QueryPerformanceCounter(&now);
         double elapsed = (double)(now.QuadPart - m_clockStartQpc.QuadPart)
             / (double)m_qpcFreq.QuadPart;
-        m_dbClockOffset += elapsed;
+        m_dbClockOffset.store(m_dbClockOffset.load() + elapsed);
         m_bClockStarted = false;
     }
 
@@ -959,37 +989,12 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 pBlack->Release();
             }
         }
-        if (m_eState == State::Playing && !m_bPaused && m_bClockCalibrated)
-        {
-            if (!m_bClockStarted)
-            {
-                QueryPerformanceCounter(&m_clockStartQpc);
-                m_bClockStarted = true;
-            }
-            LARGE_INTEGER now;
-            QueryPerformanceCounter(&now);
-            double elapsed = (double)(now.QuadPart - m_clockStartQpc.QuadPart)
-                / (double)m_qpcFreq.QuadPart;
-            m_dbAudioClock = m_dbClockOffset + elapsed;
-        }
 
         const double dbNow = m_dbAudioClock.load();
 
         if (m_eState == State::Playing && !m_bPaused)
         {
             VideoFrame f;
-
-            if (!m_bClockCalibrated)
-            {
-                if (GetFrontFrame(f))
-                {
-                    m_dbClockOffset = f.dbPts;
-                    m_dbAudioClock = f.dbPts;
-                    m_bClockStarted = false;
-                    m_bClockCalibrated = true;
-                    VDBG(L"[Video] Calibrated to first pts=%.3f\n", f.dbPts);
-                }
-            }
 
             while (m_queFrames.size() > 1 && GetFrontFrame(f))
             {
@@ -1037,6 +1042,7 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         Stop();
         CloseInternal();
+        DestroyTexturePool();
         return 0;
     }
     return CElem::OnEvent(uMsg, wParam, lParam);

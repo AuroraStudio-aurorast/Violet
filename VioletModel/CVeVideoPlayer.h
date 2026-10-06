@@ -172,9 +172,9 @@ private:
     std::atomic<bool>    m_bAudioDeviceReady{ false };
 
     std::atomic<double>  m_dbAudioClock{ 0.0 };    // 当前时钟（秒），从流起点算
-    double               m_dbClockOffset{ 0.0 };   // 暂停/Seek 时冻结的时钟值
-    bool                 m_bClockStarted{ false }; // QPC 基准是否已取
-    bool                 m_bClockCalibrated{ false };   // 首次取到帧时把时钟对齐到其 pts
+    std::atomic<double>  m_dbClockOffset{ 0.0 };   // 暂停/Seek 时冻结的时钟值
+    std::atomic<bool>    m_bClockStarted{ false }; // QPC 基准是否已取
+    std::atomic<bool>    m_bClockCalibrated{ false };   // 首次取到帧时把时钟对齐到其 pts
     LARGE_INTEGER        m_clockStartQpc{};        // 时钟启动时的 QPC 值
     LARGE_INTEGER        m_qpcFreq{};              // QPC 频率（构造时取一次）
 

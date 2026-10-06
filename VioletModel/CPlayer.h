@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CPlayList.h"
+#include "eck\CRefStr.h"
 
 enum class PlayEvt
 {
@@ -64,6 +65,8 @@ private:
 
 	double m_lfCurrTime{};// 秒
 	double m_lfTotalTime{};// 秒
+
+	std::wstring m_rsFile{ LR"( )" };//文件位置
 
 	DWORD m_dwLastHrOrBassErr{};
 
@@ -146,4 +149,5 @@ public:
 	EckInlineCe void SetAutoNextMode(AutoNextMode eMode) noexcept { m_eAutoNextMode = eMode; }
 	EckInlineNdCe AutoNextMode GetAutoNextMode() const noexcept { return m_eAutoNextMode; }
 	EckInlineNdCe BOOL IsDefaultCover() const noexcept { return m_bDefCover; }
+	EckInlineNdCe const std::wstring& GetFile() const noexcept { return m_rsFile; }
 };
