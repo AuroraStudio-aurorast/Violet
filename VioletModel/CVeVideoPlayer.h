@@ -218,6 +218,11 @@ private:
 
     double m_dbStreamStartTime{ 0.0 };
 
+    float radiusX = 0.f;
+    float radiusY = 0.f;
+
+    float imageOpacity = 1.f;
+
     int m_cxPoolVideo{};
     int m_cyPoolVideo{};
 
@@ -268,14 +273,23 @@ public:
     void  Play();
     void  Pause();
     void  Stop();
-    void  Seek(double dbSeconds);
+    void  Seek(double dbSeconds); //√Î
     void  SetLoop(bool b) { m_bLoop = b; }
     void  SetVolume(float v);
     float GetVolume() const { return m_fVolume.load(); }
 
     State  GetState()    const { return m_eState; }
-    double GetDuration() const { return m_dbDuration; }
-    double GetPosition() const { return GetAudioClock(); }
+    double GetDuration() const { return m_dbDuration; } //√Î
+    double GetPosition() const { return GetAudioClock(); } //√Î
+
+    void SetBorderRadius(float radiusX_, float radiusY_) {
+        radiusX = radiusX_;
+        radiusY = radiusY_;
+    }
+
+    void SetOpacity(float opacity) {
+        imageOpacity = opacity;
+    }
 
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 };

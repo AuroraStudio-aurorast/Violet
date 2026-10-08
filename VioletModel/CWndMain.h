@@ -89,6 +89,7 @@ private:
 	CWndLrc m_WndLrc{};
 
 	//CVioletTheme* m_pVioletTheme{ new CVioletTheme{} };
+	bool m_isMouseIn{ false };
 
 
 	PCWSTR MainWndPageName[4]
@@ -160,6 +161,8 @@ public:
 	LRESULT OnElemEvent(Dui::CElem* pElem, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	ID2D1Bitmap1* RealizeImage(GImg n);
+
+	void SetControlsVisible(bool visible);
 
 	void TlTick(int iMs) override;
 	BOOL TlIsValid() override { return m_bPPAnActive; }

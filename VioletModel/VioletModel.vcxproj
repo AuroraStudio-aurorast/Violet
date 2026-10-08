@@ -407,6 +407,7 @@
     <ClInclude Include="CVeDuiListTemplate.h" />
     <ClInclude Include="CVeDuiPlayList.h" />
     <ClInclude Include="CVeDuiScrollBar.h" />
+    <ClInclude Include="CVeDuiSpacer.h" />
     <ClInclude Include="CVeDuiTabList.h" />
     <ClInclude Include="CVeDuiTitleBar.h" />
     <ClInclude Include="CVeDuiTrackBar.h" />
@@ -453,6 +454,7 @@
     <ClCompile Include="CVeDuiList.cpp" />
     <ClCompile Include="CVeDuiPlayList.cpp" />
     <ClCompile Include="CVeDuiScrollBar.cpp" />
+    <ClCompile Include="CVeDuiSpacer.cpp" />
     <ClCompile Include="CVeDuiTabList.cpp" />
     <ClCompile Include="CVeDuiTitleBar.cpp" />
     <ClCompile Include="CVeDuiTrackBar.cpp" />

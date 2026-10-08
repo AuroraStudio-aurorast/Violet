@@ -980,16 +980,7 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         Dui::ELEMPAINTSTRU ps;
         BeginPaint(ps, wParam, lParam);
-        {
-            ID2D1SolidColorBrush* pBlack = nullptr;
-            m_pDC->CreateSolidColorBrush(D2D1::ColorF(0.f, 0.f, 0.f, 1.f), &pBlack);
-            if (pBlack)
-            {
-                m_pDC->FillRectangle(GetViewRectF(), pBlack);
-                pBlack->Release();
-            }
-        }
-
+        D2D1_RECT_F rcF = GetViewRectF();
         const double dbNow = m_dbAudioClock.load();
 
         if (m_eState == State::Playing && !m_bPaused)
@@ -1019,13 +1010,22 @@ LRESULT CVeVideoPlayer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
+        RoundedRectMaskXYD2dDC(m_pDC, eck::g_pD2DFactory, rcF, radiusX, radiusY);
+        ID2D1SolidColorBrush* pBlack = nullptr;
+        m_pDC->CreateSolidColorBrush(D2D1::ColorF(0.f, 0.f, 0.f, imageOpacity), &pBlack);
+        if (pBlack)
+        {
+            m_pDC->FillRectangle(rcF, pBlack);
+            pBlack->Release();
+        }
+
         if (m_lastFrame.pBitmap)
         {
             D2D1_RECT_F rc = GetAspectFitRect();
-            m_pDC->DrawBitmap(m_lastFrame.pBitmap, rc, 1.0f,
+            m_pDC->DrawBitmap(m_lastFrame.pBitmap, rc, imageOpacity,
                 D2D1_INTERPOLATION_MODE_LINEAR);
         }
-
+        m_pDC->PopLayer();
         static int _pc = 0;
         if (++_pc % 30 == 1)
             VDBG(L"[Video] PAINT: clock=%.3f que=%zu last=%p\n",

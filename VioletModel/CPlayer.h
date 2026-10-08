@@ -11,6 +11,8 @@ enum class PlayEvt
 	End,
 	CommTick,
 	ListChanged,
+	PositionChanged,
+	VolumeChanged,
 };
 
 struct PLAY_EVT_PARAM
@@ -96,8 +98,10 @@ public:
 	void SetVolume(float vol) { 
 		m_Volume = vol; 
 		m_Bass.SetVolume(vol);
+		m_Sig.Emit({ PlayEvt::VolumeChanged });
 	}
 
+	EckInlineNdCe float GetVolume() const noexcept { return m_Volume; }
 
 	EckInlineNdCe auto& GetSignal() noexcept { return m_Sig; }
 	void SetList(CPlayList* pPlayList) noexcept;
@@ -107,6 +111,10 @@ public:
 	EckInlineNdCe double GetCurrTime() const noexcept { return m_lfCurrTime; }
 	// 秒
 	EckInlineNdCe double GetTotalTime() const noexcept { return m_lfTotalTime; }
+	// 秒，仅在视频播放模式下使用
+	EckInlineNdCe void SetCurrTime(double lfCurrTime) noexcept { m_lfCurrTime = lfCurrTime; }
+	// 秒，仅在视频播放模式下使用
+	EckInlineNdCe void SetTotalTime(double lfTotalTime) noexcept { m_lfTotalTime = lfTotalTime; }
 	EckInlineNdCe auto& GetBass() noexcept { return m_Bass; }
 	EckInlineNdCe BOOL IsVideo() const noexcept { return m_bVideo; }
 

@@ -323,6 +323,14 @@ public:
             m_fPos = m_fMax;
     }
 
+    float GetRangefMin() {
+        return m_fMin;
+    }
+
+    float GetRangefMax() {
+        return m_fMax;
+    }
+
     void SetTrackPos(float fPos)
     {
         m_fPos = fPos;

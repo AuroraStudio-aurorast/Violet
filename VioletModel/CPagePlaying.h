@@ -4,6 +4,7 @@
 #include "CVeDuiImage.h"
 #include "CVeDuiButton.h"
 #include "CVeVideoPlayer.h"
+#include "CVeDuiSpacer.h"
 #include "CApp.h"
 // CWndMain负责更新该元素的图片
 class CPagePlaying : public Dui::CElem
@@ -21,12 +22,19 @@ private:
 
 	CVeVideoPlayer m_VideoPlayer{};
 
+	CVeSpacer m_ControlsSpacer{};
+	CVeSpacer m_TitlebarSpacer{};
+
 	ID2D1Bitmap1* m_pBmpCover{};
 	ID2D1Bitmap1* m_pBmpBlurredCover{};
 	ComPtr<ID2D1SolidColorBrush> m_pBrBkg{};
 
 	ComPtr<IDWriteTextFormat> pTfTitle;
 	ComPtr<IDWriteTextFormat> pTfSubtitle;
+
+	D2D1_RECT_F rcView{};
+
+	bool m_isMouseIn = false;
 
 	float radiusX = 0.f;
 	float radiusY = 0.f;
@@ -38,6 +46,8 @@ private:
 	void SetEmptyText();
 
 	void OnColorSchemeChanged();
+
+	void SetControlsVisible(bool visible);
 public:
 	LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
@@ -56,10 +66,19 @@ public:
 		radiusX = radiusX_;
 		radiusY = radiusY_;
 		m_CoverImg.SetBorderRadius(radiusX_, radiusY_);
+		m_VideoPlayer.SetBorderRadius(radiusX_, radiusY_);
+		m_TitlebarSpacer.setRoundedRectMask(rcView, radiusX_, radiusY_);
+		m_ControlsSpacer.setRoundedRectMask(rcView, radiusX_, radiusY_);
+		m_ControlsSpacer.setMaskFlip(true);
 	}
 
 	void setCoverImgOpacity(float Opacity) {
 		m_CoverImg.SetOpacity(Opacity);
+		if (App->GetPlayer().IsVideo()) {
+			m_VideoPlayer.SetOpacity(1 - Opacity);
+			m_TitlebarSpacer.setBgAlpha(0.4 * (1 - Opacity));
+			m_ControlsSpacer.setBgAlpha(0.4 * (1 - Opacity));
+		}
 		if (Opacity == 0) {
 			m_CoverImg.SetVisible(false);
 		}
@@ -68,4 +87,8 @@ public:
 		}
 	}
 
+	void setMouseIn(bool mouseIn) {
+		m_isMouseIn = mouseIn;
+		SetControlsVisible(m_isMouseIn);
+	}
 };

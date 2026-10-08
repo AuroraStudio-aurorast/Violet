@@ -133,6 +133,18 @@ PlayErr CPlayer::PlayOrPause()
 {
 	if (!m_pPlayList)
 		return PlayErr::NoPlayList;
+	if (m_bVideo) {
+		if (m_bPaused) {
+			m_bPaused = FALSE;
+			GetSignal().Emit({ PlayEvt::Resume });
+			return PlayErr::Ok;
+		}
+		else {
+			m_bPaused = TRUE;
+			GetSignal().Emit({ PlayEvt::Pause });
+			return PlayErr::Ok;
+		}
+	}
 	if (m_bActive)
 	{
 		switch (m_Bass.IsActive())
@@ -277,8 +289,14 @@ PlayErr CPlayer::AutoNext()
 
 void CPlayer::SetPosition(double lfPos)
 {
-	m_Bass.SetPosition(lfPos);
-	m_lfCurrTime = m_Bass.GetPosition();
+	if (m_bVideo) {
+		m_lfCurrTime = lfPos;
+		m_Sig.Emit({ PlayEvt::PositionChanged });
+	}
+	else {
+		m_Bass.SetPosition(lfPos);
+		m_lfCurrTime = m_Bass.GetPosition();
+	}
 }
 
 AutoNextMode CPlayer::NextAutoNextMode()

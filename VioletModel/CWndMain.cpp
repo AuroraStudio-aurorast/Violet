@@ -315,6 +315,9 @@ void CWndMain::OnPlayEvent(const PLAY_EVT_PARAM& e)
 		if (m_msProgTimer >= TE_PROG)
 		{
 			m_msProgTimer = 0;
+			if (m_TBProgress.GetRangefMax() != float(App->GetPlayer().GetTotalTime() * ProgBarScale)) {
+				m_TBProgress.SetRange(0.f, float(App->GetPlayer().GetTotalTime() * ProgBarScale));
+			}
 			m_TBProgress.SetTrackPos(float(App->GetPlayer().GetCurrTime() * ProgBarScale));
 			m_TBProgress.InvalidateRect();
 			TblUpdateProgress();
@@ -493,6 +496,22 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return lResult;
 	}
 	break;
+	case WM_MOUSEMOVE:
+	{
+		if (m_isMouseIn != true) {
+			m_isMouseIn = true;
+			SetControlsVisible(true);
+		}
+	}
+	break;
+	case WM_MOUSELEAVE:
+	{
+		if (m_isMouseIn != false) {
+			m_isMouseIn = false;
+			SetControlsVisible(false);
+		}
+	}
+	break;
 	}
 	return __super::OnMsg(hWnd, uMsg, wParam, lParam);
 }
@@ -578,6 +597,19 @@ ID2D1Bitmap1* CWndMain::RealizeImage(GImg n)
 	return m_vBmpRealization[(size_t)n];
 }
 
+void CWndMain::SetControlsVisible(bool visible) {
+	if (m_PagePlaying.IsVisible() && App->GetPlayer().IsVideo() && !m_bPPAnActive) {
+		m_BTPrev.SetVisible(visible);
+		m_BTPlay.SetVisible(visible);
+		m_BTNext.SetVisible(visible);
+		m_BTAutoNext.SetVisible(visible);
+		m_BTLrc.SetVisible(visible);
+		m_BTVol.SetVisible(visible);
+		m_TBProgress.SetVisible(visible);
+		m_PagePlaying.setMouseIn(visible);
+	}
+}
+
 void CWndMain::TlTick(int iMs)
 {
 	constexpr float MaxPPAnDuration = 700.f;
@@ -611,6 +643,9 @@ void CWndMain::TlTick(int iMs)
 		}
 		else
 			m_PagePlaying.SetVisible(FALSE);
+
+		SetControlsVisible(m_isMouseIn);
+
 		return;
 	}
 	// 移动底部的按钮

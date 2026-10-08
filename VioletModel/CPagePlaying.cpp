@@ -81,6 +81,10 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 	case PlayEvt::CommTick:
 	{
 		m_Lrc.LrcSetCurrentLine(App->GetPlayer().GetCurrLrcIdx());
+		if (App->GetPlayer().IsVideo()) {
+			App->GetPlayer().SetTotalTime(m_VideoPlayer.GetDuration());
+			App->GetPlayer().SetCurrTime(m_VideoPlayer.GetPosition());
+		}
 	}
 	break;
 	case PlayEvt::Play:
@@ -89,7 +93,14 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 		if (App->GetPlayer().IsVideo()) { 
 			std::wstring fileAddr = App->GetPlayer().GetFile();
 			m_VideoPlayer.Open(fileAddr);
+			m_ControlsSpacer.SetVisible(true);
+			m_TitlebarSpacer.SetVisible(true);
 			return; 
+		}
+		else {
+			m_VideoPlayer.Stop();
+			m_ControlsSpacer.SetVisible(false);
+			m_TitlebarSpacer.SetVisible(false);
 		}
 		UpdateBlurredCover();
 		InvalidateRect();
@@ -110,12 +121,39 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 		m_Lrc.UpdateUI();
 	}
 	break;
+	case PlayEvt::Pause:
+	{
+		if (App->GetPlayer().IsVideo()) {
+			m_VideoPlayer.Pause();
+		}
+	}
+	break;
+	case PlayEvt::Resume:
+	{
+		if (App->GetPlayer().IsVideo()) {
+			m_VideoPlayer.Play();
+		}
+	}
+	break;
 	case PlayEvt::Stop:
 	{
 		m_Lrc.LrcClear();
 		SetEmptyText();
 	}
 	break;
+	case PlayEvt::PositionChanged:
+	{
+		if (App->GetPlayer().IsVideo()) {
+			m_VideoPlayer.Seek(App->GetPlayer().GetCurrTime());
+		}
+	}
+	break;
+	case PlayEvt::VolumeChanged:
+	{
+		if (App->GetPlayer().IsVideo()) {
+			m_VideoPlayer.SetVolume(App->GetPlayer().GetVolume());
+		}
+	}
 	}
 }
 
@@ -146,6 +184,12 @@ void CPagePlaying::OnColorSchemeChanged()
 		App->GetColor(GPal::LrcTextHighlight),
 	};
 	m_Lrc.LrcSetColor(crLrc);
+}
+
+void CPagePlaying::SetControlsVisible(bool visible) {
+	m_BTBack.SetVisible(visible);
+	m_ControlsSpacer.SetVisible(visible);
+	m_TitlebarSpacer.SetVisible(visible);
 }
 
 LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -187,6 +231,8 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		const auto cy = GetHeightF();
 		const auto cxMinGap = cx * 1.f / 20.f;
 
+		rcView = D2D1::RectF(0, 0, cx, cy);
+
 		D2D1_RECT_F rcCover;
 		rcCover.left = cx * 1 / 11;
 		rcCover.top = cy * 19 / 100;
@@ -210,6 +256,9 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		rcLabel.top = rcLabel.bottom + CyPlayPageLabelPadding;
 		rcLabel.bottom = rcLabel.top + CyPlayPageLabel;
 		m_LAArtist.SetRect(rcLabel);
+
+		m_ControlsSpacer.SetRect(D2D1::RectF(0, cy - 120, cx, cy));
+		m_TitlebarSpacer.SetRect(D2D1::RectF(0, 0, cx, 32));
 
 		const auto dBackBtnMar = (CxyMiniCover - CxyBackBtn) / 2;
 		D2D1_RECT_F rcBackBtn;
@@ -289,6 +338,15 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		m_VideoPlayer.Create(nullptr, Dui::DES_VISIBLE, 0,
 			0, 0, 200, 200, this);
+		m_VideoPlayer.SetVisible(false);
+
+		m_ControlsSpacer.Create(nullptr, Dui::DES_VISIBLE | Dui::DES_CONTENT_EXPAND, 0,
+			0, 0, 200, 200, this);
+		m_TitlebarSpacer.Create(nullptr, Dui::DES_VISIBLE | Dui::DES_CONTENT_EXPAND, 0,
+			0, 0, 200, 200, this);
+
+		m_ControlsSpacer.SetVisible(false);
+		m_TitlebarSpacer.SetVisible(false);
 
 		m_BTBack.Create(nullptr, Dui::DES_VISIBLE | Dui::DES_NOTIFY_TO_WND, 0,
 			100, 100, 70, 20, this);
