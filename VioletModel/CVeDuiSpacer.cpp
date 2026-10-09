@@ -79,7 +79,8 @@ LRESULT CVeSpacer::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             ComPtr<ID2D1Effect> saturationEffect;
             hr = m_pDC->CreateEffect(CLSID_D2D1Saturation, &saturationEffect);
-            saturationEffect->SetValue(D2D1_SATURATION_PROP_SATURATION, 5.f);
+            float fSaturation = 1.f + 4.f * (bgAlpha / 0.4);
+            saturationEffect->SetValue(D2D1_SATURATION_PROP_SATURATION, fSaturation);
 
             pEffect->SetInput(0, pBmpEffect.Get());
             saturationEffect->SetInputEffect(0, pEffect.Get());

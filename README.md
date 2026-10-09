@@ -21,6 +21,12 @@ your product (through sales, advertising, etc) then you can use
 BASS in it for free. 
 ```
 
+**[FFmpeg](https://github.com/FFmpeg/FFmpeg)**
+
+GPL-2.0
+
+GPL-3.0
+
 **[Detours](https://github.com/microsoft/Detours)**
 
 MIT License
