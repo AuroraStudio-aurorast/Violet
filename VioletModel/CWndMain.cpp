@@ -497,6 +497,7 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_MOUSEMOVE:
+	case WM_NCMOUSEMOVE:
 	{
 		if (m_isMouseIn != true) {
 			m_isMouseIn = true;
@@ -505,7 +506,16 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_MOUSELEAVE:
+	case WM_NCMOUSELEAVE:
 	{
+		if (GetCapture() == hWnd)
+			break;
+		POINT pt{};
+		GetCursorPos(&pt);
+		RECT rc{};
+		GetWindowRect(hWnd, &rc);
+		if (PtInRect(&rc, pt))
+			break;
 		if (m_isMouseIn != false) {
 			m_isMouseIn = false;
 			SetControlsVisible(false);
