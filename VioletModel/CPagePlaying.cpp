@@ -95,6 +95,11 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e)
 			m_VideoPlayer.Open(fileAddr);
 			m_ControlsSpacer.SetVisible(true);
 			m_TitlebarSpacer.SetVisible(true);
+			if (!this->IsVisible()) {
+				VEN_MINICOVER_CLICK n{};
+				n.uCode = ELEN_MINICOVER_CLICK;
+				GenElemNotify(&n);
+			}
 			return; 
 		}
 		else {

@@ -109,17 +109,6 @@ EXPORTS
     av_parser_parse2
     av_qsv_alloc_context
     av_shrink_packet
-    av_smpte_291m_anc_8bit_decode
-    av_smpte_291m_anc_8bit_encode
-    av_smpte_291m_anc_8bit_extract_cta_708
-    av_smpte_291m_anc_8bit_fill_checksum
-    av_smpte_291m_anc_8bit_get_sample_count
-    av_smpte_436m_anc_append
-    av_smpte_436m_anc_encode
-    av_smpte_436m_anc_iter_init
-    av_smpte_436m_anc_iter_next
-    av_smpte_436m_coded_anc_payload_size
-    av_smpte_436m_coded_anc_validate
     av_vorbis_parse_frame
     av_vorbis_parse_frame_flags
     av_vorbis_parse_free
@@ -179,18 +168,11 @@ EXPORTS
     avpriv_ac3_parse_header
     avpriv_adts_header_parse
     avpriv_codec_get_cap_skip_frame_fill_param
-    avpriv_dca_convert_bitstream
-    avpriv_dca_parse_core_frame_header
-    avpriv_elbg_do
-    avpriv_elbg_free
     avpriv_find_start_code
-    avpriv_fits_header_init
-    avpriv_fits_header_parse_line
     avpriv_h264_has_num_reorder_frames
     avpriv_mpeg4audio_get_config2
     avpriv_mpegaudio_decode_header
     avpriv_mpegaudio_decode_header2
     avpriv_pix_fmt_find
     avpriv_split_xiph_headers
-    avpriv_tak_parse_streaminfo
     avsubtitle_free

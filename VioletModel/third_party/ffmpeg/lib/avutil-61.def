@@ -20,13 +20,6 @@ EXPORTS
     av_alpha_mode_name
     av_ambient_viewing_environment_alloc
     av_ambient_viewing_environment_create_side_data
-    av_amf_attach_hdr_metadata
-    av_amf_display_mastering_meta_to_hdrmeta
-    av_amf_extract_hdr_metadata
-    av_amf_get_color_profile
-    av_amf_get_memory_type
-    av_amf_light_metadata_to_hdrmeta
-    av_amf_to_av_format
     av_append_path_component
     av_asprintf
     av_assert0_fpu
@@ -41,7 +34,6 @@ EXPORTS
     av_audio_fifo_size
     av_audio_fifo_space
     av_audio_fifo_write
-    av_av_to_amf_format
     av_base64_decode
     av_base64_encode
     av_basename
@@ -271,6 +263,10 @@ EXPORTS
     av_frame_unref
     av_free
     av_freep
+    av_gain_map_channels_identical
+    av_gain_map_params_alloc
+    av_gain_map_params_create_side_data
+    av_gain_map_params_validate
     av_gcd
     av_gcd_q
     av_get_alt_sample_fmt
@@ -609,8 +605,6 @@ EXPORTS
     av_video_hint_alloc
     av_video_hint_create_side_data
     av_vk_frame_alloc
-    av_vk_get_optional_device_extensions
-    av_vk_get_optional_instance_extensions
     av_vkfmt_from_pixfmt
     av_vlog
     av_write_image_line
@@ -623,9 +617,7 @@ EXPORTS
     avpriv_alloc_fixed_dsp
     avpriv_cga_font_get
     avpriv_float_dsp_alloc
-    avpriv_fopen_utf8
     avpriv_init_lls
-    avpriv_open
     avpriv_report_missing_feature
     avpriv_request_sample
     avpriv_set_systematic_pal2
@@ -635,7 +627,6 @@ EXPORTS
     avpriv_slicethread_execute2
     avpriv_slicethread_free
     avpriv_solve_lls
-    avpriv_tempfile
     avpriv_vga16_font_get
     avutil_configuration
     avutil_license

@@ -84,7 +84,7 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		m_pDC->CreateSolidColorBrush({}, &m_pBrush);
 		const auto pWnd = (CWndMain*)GetWnd();
 
-		m_LAWatermark.Create(L"Violet ortus_prerelease\r\n内部测试", Dui::DES_VISIBLE, 0,
+		m_LAWatermark.Create(L"Violet ortus_prerelease\r\n内部测试。请勿截取本构建版本的屏幕截图", Dui::DES_VISIBLE, 0,
 			0, 0, 10, 10, this, pWnd);
 		ComPtr<IDWriteTextFormat> pTfWatermark, pTfTitle, pTfSubtitle;
 		App->GetFontFactory().NewFont(pTfWatermark.RefOf(), eck::Align::Far,

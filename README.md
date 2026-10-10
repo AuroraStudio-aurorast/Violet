@@ -23,9 +23,7 @@ BASS in it for free.
 
 **[FFmpeg](https://github.com/FFmpeg/FFmpeg)**
 
-GPL-2.0
-
-GPL-3.0
+LGPL v2.1+
 
 **[Detours](https://github.com/microsoft/Detours)**
 
